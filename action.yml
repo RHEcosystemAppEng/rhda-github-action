@@ -1,0 +1,28 @@
+name: Red Hat Dependency Analytics (RHDA)
+description: Analyze vulnerabilities in application dependencies
+author: Red Hat
+branding:
+  icon: circle
+  color: red
+
+inputs:
+  manifest_file_path:
+    description: Path to target manifest file for analysis.
+    required: false
+  rhda_report_name:
+    description: Name of the file where the Red Hat Dependency Analytics report will be saved.
+    required: false
+    default: redhat-dependency-analytics-report
+  snyk_token:
+    description: Snyk token to be used to authenticate to the Red Hat Dependency Analytics.
+    required: false
+
+outputs:
+  rhda_report_json:
+    description: Generated Red Hat Dependency Analytics Report in JSON format
+  rhda_report_sarif:
+    description: Generated Red Hat Dependency Analytics Report in SARIF format
+
+runs:
+  using: 'node20'
+  main: 'dist/src/index.js'

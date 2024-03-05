@@ -1,0 +1,23 @@
+{
+  "name": "rhda-github-action",
+  "version": "1.0.0",
+  "description": "This action reflects the Red Hat Dependency Analytics VSCode extension for Github Actions.",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@actions/core": "^1.10.1",
+    "@actions/github": "^6.0.0",
+    "@redhat-actions/action-io-generator": "^1.5.0"
+  }
+}
