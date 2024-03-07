@@ -3,7 +3,8 @@ import * as github from '@actions/github';
 
 import * as utils from './utils/utils'
 import { Inputs, Outputs } from './generated/inputs-outputs';
-import { resolveManifestFilePath } from './ManifestHandler';
+import { resolveManifestFilePath } from './manifestHandler';
+import { stackAnalysisService } from './exhortServices';
 
 async function run(): Promise<void> {
 
@@ -23,7 +24,30 @@ async function run(): Promise<void> {
       ghCore.info(`"${Inputs.MANIFEST_FILE_PATH}" is "${manifestFilePathInput}"`);
   }
 
-  const resolvedManifestFilePath = await resolveManifestFilePath(manifestFilePathInput);
+  const manifestData = await resolveManifestFilePath(manifestFilePathInput);
+
+  // set up configuration options for the stack analysis request
+  const options = {
+    // 'RHDA_TOKEN': globalConfig.telemetryId,
+    'RHDA_SOURCE': 'github-actions',
+    // 'MATCH_MANIFEST_VERSIONS': globalConfig.matchManifestVersions,
+    'EXHORT_MVN_PATH': ghCore.getInput(Inputs.MVN_EXECUTABLE_PATH),
+    'EXHORT_NPM_PATH': ghCore.getInput(Inputs.NPM_EXECUTABLE_PATH),
+    'EXHORT_GO_PATH': ghCore.getInput(Inputs.GO_EXECUTABLE_PATH),
+    'EXHORT_PYTHON3_PATH': ghCore.getInput(Inputs.PYTHON3_EXECUTABLE_PATH),
+    'EXHORT_PIP3_PATH': ghCore.getInput(Inputs.PIP3_EXECUTABLE_PATH),
+    'EXHORT_PYTHON_PATH': ghCore.getInput(Inputs.PYTHON_EXECUTABLE_PATH),
+    'EXHORT_PIP_PATH': ghCore.getInput(Inputs.PIP_EXECUTABLE_PATH),
+    // 'EXHORT_SNYK_TOKEN': globalConfig.exhortPipPath
+  };
+
+  await stackAnalysisService(manifestData.filePath, options)
+  .then( result => {
+    console.log("RHDA working")
+  })
+  .catch(error => {
+    console.log(`RHDA not working, Error: ${error.message}`)
+  })
 
 }
 

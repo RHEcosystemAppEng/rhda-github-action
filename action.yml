@@ -16,6 +16,34 @@ inputs:
   snyk_token:
     description: Snyk token to be used to authenticate to the Red Hat Dependency Analytics.
     required: false
+  mvn_executable_path:
+    description: Specifies absolute path of mvn executable.
+    required: false
+    default: mvn
+  npm_executable_path:
+    description: Specifies absolute path of npm executable.
+    required: false
+    default: npm
+  go_executable_path:
+    description: Specifies absolute path of go executable.
+    required: false
+    default: go
+  python3_executable_path:
+    description: Specifies absolute path of python3 executable, python3 takes precedence over python.
+    required: false
+    default: python3
+  pip3_executable_path:
+    description: Specifies absolute path of pip3 executable, pip3 takes precedence over pip.
+    required: false
+    default: pip3
+  python_executable_path:
+    description: Specifies absolute path of python executable, python3 takes precedence over python.
+    required: false
+    default: python
+  pip_executable_path:
+    description: Specifies absolute path of pip executable, pip3 takes precedence over pip.
+    required: false
+    default: pip
 
 outputs:
   rhda_report_json:

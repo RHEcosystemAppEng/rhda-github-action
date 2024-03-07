@@ -1,19 +1,36 @@
 on: [push]
 
 jobs:
-  hello_world_job:
+  rhda_job:
     runs-on: ubuntu-latest
-    name: A job to say hello
+    name: Testing RHDA action
     steps:
-      # To use this repository's private action,
-      # you must check out the repository
-      - name: Checkout
-        uses: actions/checkout@v4
-      - name: Hello world action step
-        uses: ./ # Uses an action in the root directory
-        id: hello
+      - name: Checkout repository
+        uses: actions/checkout@v3
         with:
-          who-to-greet: 'Mona the Octocat'
-      # Use the output from the `hello` step
-      - name: Get the output time
-        run: echo "The time was ${{ steps.hello.outputs.time }}"
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+          registry-url: 'https://npm.pkg.github.com'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create .npmrc
+        run: |
+          echo "@RHEcosystemAppEng:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+      - name: Install Dependencies
+        run: npm i
+
+      - name: Compile Typescript code
+        run: npm run compile
+
+      - name: Test RHDA
+        uses: ./ # Uses an action in the root directory
+        with:
+          manifest_file_path: manifests/node/npm/package.json
+
+        

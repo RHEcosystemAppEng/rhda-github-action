@@ -1,15 +1,16 @@
-
 {
   "compilerOptions": {
     "module": "esnext",
     "target": "esnext",
     "lib": ["esnext"],
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
     "outDir": "dist",
     "rootDir": "."
   },
-  "include": ["src/**/*"],
+  "include": [
+    "src/"
+  ],
   "exclude": ["node_modules"]
 }

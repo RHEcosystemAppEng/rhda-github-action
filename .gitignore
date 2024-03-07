@@ -2,6 +2,9 @@
 **/node_modules
 **/package-lock.json
 
+# npm  config file
+.npmrc
+
 #others
 dist
 
