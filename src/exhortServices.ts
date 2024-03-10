@@ -1,6 +1,6 @@
 'use strict';
 
-import exhort from '@RHEcosystemAppEng/exhort-javascript-api';
+import exhort from '@rhecosystemappeng/exhort-javascript-api';
 
 /**
  * Performs RHDA stack analysis based on the provided manifest path and options.
