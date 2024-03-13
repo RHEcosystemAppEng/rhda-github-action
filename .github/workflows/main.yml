@@ -28,6 +28,9 @@ jobs:
       - name: Compile Typescript code
         run: npm run compile
 
+      - run: tree
+      - run: pwd
+
       - name: Test RHDA
         uses: ./ # Uses an action in the root directory
         with:

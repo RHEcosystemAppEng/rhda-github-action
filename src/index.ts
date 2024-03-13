@@ -1,10 +1,10 @@
 import * as ghCore from '@actions/core';
 import * as github from '@actions/github';
 
-import * as utils from './utils/utils'
-import { Inputs, Outputs } from './generated/inputs-outputs';
-import { resolveManifestFilePath } from './manifestHandler';
-import { stackAnalysisService } from './exhortServices';
+import * as utils from './utils/utils.js'
+import { Inputs, Outputs } from './generated/inputs-outputs.js';
+import { resolveManifestFilePath } from './manifestHandler.js';
+import { stackAnalysisService } from './exhortServices.js';
 
 async function run(): Promise<void> {
 

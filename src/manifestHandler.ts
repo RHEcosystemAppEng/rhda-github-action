@@ -1,8 +1,8 @@
 import * as ghCore from "@actions/core";
+import path from "path";
 import { promises as fs } from "fs";
 
-import { Inputs } from "./generated/inputs-outputs";
-import path from "path";
+import { Inputs } from "./generated/inputs-outputs.js";
 
 type ManifestType = "Go" | "Maven" | "Node.js" | "Pip" | "custom";
 const DEFAULT_MANIFEST_DIR = ".";
