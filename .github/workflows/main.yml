@@ -28,12 +28,14 @@ jobs:
       - name: Compile Typescript code
         run: npm run compile
 
-      - run: tree
-      - run: pwd
-
       - name: Test RHDA
+        id: test-rhda
         uses: ./ # Uses an action in the root directory
         with:
           manifest_file_path: manifests/node/npm/package.json
+
+      - run: cat ./redhat-dependency-analytics-report.json
+
+      - run: echo "the json output is ${{ steps.test-rhda.outputs.rhda_report_json }}"
 
         

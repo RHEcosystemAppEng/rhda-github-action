@@ -16,6 +16,12 @@ inputs:
   snyk_token:
     description: Snyk token to be used to authenticate to the Red Hat Dependency Analytics.
     required: false
+  set_python_virtual_environment:
+    description: Automates the installation of missing packages in a Python virtual environment when set to true.
+    required: false
+  match_manifest_version:
+    description: Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
+    required: true
   mvn_executable_path:
     description: Specifies absolute path of mvn executable.
     required: false

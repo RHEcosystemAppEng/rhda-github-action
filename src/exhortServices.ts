@@ -1,5 +1,3 @@
-'use strict';
-
 import exhort from '@rhecosystemappeng/exhort-javascript-api';
 
 /**
@@ -8,16 +6,14 @@ import exhort from '@rhecosystemappeng/exhort-javascript-api';
  * @param options Additional options for the analysis.
  * @returns A promise resolving to the stack analysis report in HTML format.
  */
-function stackAnalysisService(pathToManifest, options): Promise<any> {
-  return new Promise<any>(async (resolve, reject) => {
+async function stackAnalysisService(pathToManifest, options): Promise<string | exhort.AnalysisReport> {
     try {
-      // Get stack analysis in HTML format
-      const stackAnalysisReportHtml = await exhort.stackAnalysis(pathToManifest, true, options);
-      resolve(stackAnalysisReportHtml);
+      // Get stack analysis in JSON format
+      const stackAnalysisReportJson = await exhort.stackAnalysis(pathToManifest, false, options);
+      return stackAnalysisReportJson;
     } catch (error) {
-      reject(error);
+      throw error;
     }
-  });
 }
 
 /**

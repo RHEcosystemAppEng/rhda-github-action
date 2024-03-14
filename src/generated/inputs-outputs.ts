@@ -13,6 +13,12 @@ export enum Inputs {
      */
     MANIFEST_FILE_PATH = "manifest_file_path",
     /**
+     * Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
+     * Required: true
+     * Default: None.
+     */
+    MATCH_MANIFEST_VERSION = "match_manifest_version",
+    /**
      * Specifies absolute path of mvn executable.
      * Required: false
      * Default: "mvn"
@@ -54,6 +60,12 @@ export enum Inputs {
      * Default: "redhat-dependency-analytics-report"
      */
     RHDA_REPORT_NAME = "rhda_report_name",
+    /**
+     * Automates the installation of missing packages in a Python virtual environment when set to true.
+     * Required: false
+     * Default: None.
+     */
+    SET_PYTHON_VIRTUAL_ENVIRONMENT = "set_python_virtual_environment",
     /**
      * Snyk token to be used to authenticate to the Red Hat Dependency Analytics.
      * Required: false
