@@ -36,6 +36,6 @@ jobs:
 
       - run: cat ./redhat-dependency-analytics-report.json
 
-      - run: echo "the json output is ${{ steps.test-rhda.outputs.rhda_report_json }}"
+      # - run: echo "the json output is ${{ steps.test-rhda.outputs.rhda_report_json }}"
 
         

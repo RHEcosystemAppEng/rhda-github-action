@@ -22,6 +22,17 @@ inputs:
   match_manifest_version:
     description: Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
     required: true
+  upload_artifact:
+    description: |
+      Upload the generated RHDA report JSON file as an artifact.
+    required: false
+    default: "true"
+  artifact_filename:
+    description: |
+      File name of the artifact to upload.
+      By default it is named as 'redhat-dependency-analytics-report'
+    required: false
+    default: "redhat-dependency-analytics-report"
   mvn_executable_path:
     description: Specifies absolute path of mvn executable.
     required: false
@@ -56,6 +67,8 @@ outputs:
     description: Generated Red Hat Dependency Analytics Report in JSON format
   rhda_report_sarif:
     description: Generated Red Hat Dependency Analytics Report in SARIF format
+  artifact_id:
+    description: Name of the uploaded artifact
 
 runs:
   using: 'node20'
