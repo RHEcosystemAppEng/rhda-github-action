@@ -7,8 +7,12 @@ import { resolveManifestFilePath } from './manifestHandler.js';
 import { generateRHDAReport } from './rhda.js';
 import { Inputs, Outputs } from './generated/inputs-outputs.js';
 import { generateArtifacts } from './artifactHandler.js';
+import { handleSarif } from './sarif/handler.js';
 
 async function run(): Promise<void> {
+
+  const analysisStartTime = new Date().toISOString();
+  ghCore.debug(`Analysis started at ${analysisStartTime}`);
 
   let sha;
   let ref;
@@ -23,18 +27,20 @@ async function run(): Promise<void> {
 
   const manifestFilePath = await resolveManifestFilePath();
 
-  const report = await generateRHDAReport(manifestFilePath);
+  const rhdaReportJson = await generateRHDAReport(manifestFilePath);
 
   /* Save RHDA report to file */
 
   const reportFilePath = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`);
-  await utils.writeReportToFile(JSON.stringify(report,null,4), reportFilePath);
+  await utils.writeReportToFile(JSON.stringify(rhdaReportJson,null,4), reportFilePath);
   
-  ghCore.setOutput(Outputs.RHDA_REPORT_JSON, report);
+  ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
 
   // console.log(stackAnalysisReportJson['scanned']['direct']);
 
   /* Convert to SARIF and upload SARIF */
+
+  await handleSarif(rhdaReportJson, manifestFilePath, sha, ref, analysisStartTime);
 
   /* Label the PR with the scan status, if applicable */
 

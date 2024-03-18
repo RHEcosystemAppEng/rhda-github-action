@@ -8,6 +8,12 @@ export enum Inputs {
      */
     ARTIFACT_FILENAME = "artifact_filename",
     /**
+     * Github token to upload SARIF file to the GitHub
+     * Required: false
+     * Default: "${{ github.token }}"
+     */
+    GITHUB_TOKEN = "github_token",
+    /**
      * Specifies absolute path of go executable.
      * Required: false
      * Default: "go"
@@ -85,6 +91,13 @@ export enum Inputs {
      * Default: "true"
      */
     UPLOAD_ARTIFACT = "upload_artifact",
+    /**
+     * Upload the generated SARIF file, by default it is set to "true".
+     * If you don't want to upload SARIF file set this input to "false"
+     * Required: false
+     * Default: "true"
+     */
+    UPLOAD_SARIF = "upload_sarif",
 }
 
 export enum Outputs {

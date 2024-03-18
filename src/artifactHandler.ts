@@ -1,6 +1,6 @@
+import * as ghCore from '@actions/core';
 import * as path from "path";
 import { DefaultArtifactClient } from '@actions/artifact'
-import * as ghCore from '@actions/core';
 
 import { Inputs, Outputs } from './generated/inputs-outputs.js';
 

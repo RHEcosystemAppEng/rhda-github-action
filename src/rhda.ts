@@ -30,8 +30,8 @@ function getRHDAConfig() {
 
 export async function generateRHDAReport(manifestFilePath: string) {
       try {
-        const resp = await stackAnalysisService(manifestFilePath, getRHDAConfig())
-        return JSON.parse(JSON.stringify(resp));
+        const rhdaReportJson = await stackAnalysisService(manifestFilePath, getRHDAConfig())
+        return JSON.parse(JSON.stringify(rhdaReportJson));
       } catch (error) {
         throw (error);
       }

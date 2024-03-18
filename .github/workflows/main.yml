@@ -32,10 +32,11 @@ jobs:
         id: test-rhda
         uses: ./ # Uses an action in the root directory
         with:
-          manifest_file_path: manifests/node/npm/package.json
+          manifest_file_path: manifests/maven/pom.xml
 
       - run: cat ./redhat-dependency-analytics-report.json
 
-      # - run: echo "the json output is ${{ steps.test-rhda.outputs.rhda_report_json }}"
+      - run: echo "the json output is ${{ steps.test-rhda.outputs.rhda_report_sarif }}"
 
+      - run: cat ./redhat-dependency-analytics-report.sarif
         

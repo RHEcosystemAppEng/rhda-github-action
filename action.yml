@@ -22,6 +22,16 @@ inputs:
   match_manifest_version:
     description: Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
     required: true
+  github_token:
+    description: Github token to upload SARIF file to the GitHub
+    required: false
+    default: ${{ github.token }}
+  upload_sarif:
+    description: |
+      Upload the generated SARIF file, by default it is set to "true".
+      If you don't want to upload SARIF file set this input to "false"
+    required: false
+    default: "true"
   upload_artifact:
     description: |
       Upload the generated RHDA report JSON file as an artifact.
