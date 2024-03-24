@@ -39,3 +39,50 @@ export interface RhdaRemediation {
 export interface RhdaTrustedContent {
     ref: string,
 }
+
+
+
+//----------------------------------
+
+/**
+ * Represents data specification related to a dependency.
+ */
+export interface IDependencyData {
+    depName: string;
+    depVersion: string;
+    ecosystem: string;
+    providerId: string;
+    sourceId: string;
+    issues: IIssue[] | null;
+    recommendationRef: string | '';
+}
+
+/**
+ * Represents a source object with an ID and dependencies array.
+ */
+export interface ISource {
+    providerId: string;
+    sourceId: string;
+    dependencies: any[];
+}
+
+export interface IIssue {
+    id: string,
+    title: string,
+    severity: string,
+    cves: string[],
+    cvss: ICVSS,
+    remediation: IRemediation,
+}
+
+export interface ICVSS {
+    cvss: string,
+}
+
+export interface IRemediation {
+    trustedContent: ITrustedContent | null,
+}
+
+export interface ITrustedContent {
+    ref: string,
+}

@@ -36,8 +36,6 @@ async function run(): Promise<void> {
   
   ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
 
-  // console.log(stackAnalysisReportJson['scanned']['direct']);
-
   /* Convert to SARIF and upload SARIF */
 
   await handleSarif(rhdaReportJson, manifestFilePath, sha, ref, analysisStartTime);
@@ -47,8 +45,6 @@ async function run(): Promise<void> {
   /* Handle artifacts */
 
   await generateArtifacts([reportFilePath]);
-
-  // output var(V) + savedfile(V) + upload SARIF + artifact(V).
 
 }
 

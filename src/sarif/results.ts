@@ -1,9 +1,8 @@
 import * as sarif from "sarif";
-import * as fs from "fs";
 import path from 'path';
 
 import * as types from './types.js';
-import { fetchRules } from './rules.js';
+import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
 
 function resolveDependencyFromReference(ref: string): string {
     return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
@@ -25,106 +24,93 @@ function resolveVersionFromReference(ref: string): string {
 }
 
 export function rhdaToResult(
-    /*
-    * creates results
-    */
-
-    rhdaDependency: types.RhdaDependency,
+    rhdaDependency: types.IDependencyData,
     manifestFilePath: string,
+    lines: string[],
+    refHasIssues: boolean,
 ): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
-    const results: sarif.Result[] = [];
-    const rules: sarif.ReportingDescriptor[] = [];
-    const manifestData = fs.readFileSync(manifestFilePath, "utf-8");
-    const lines = manifestData.split(/\r\n|\n/);
-    const dependencyRef: string = rhdaDependency.ref;
-
-    let resolvedDependencyref = resolveDependencyFromReference(dependencyRef);
-    let dependencyVersion = resolveVersionFromReference(dependencyRef);
-    let ecosystem = resolveEcosystemFromReference(dependencyRef);
-    let dependencyName = resolvedDependencyref.split('@')[0];
-    dependencyName = ecosystem === 'maven' ? dependencyName.split('/')[1] : dependencyName;
 
     const startLine = lines.findIndex((line) => {
-        return line.includes(ecosystem === 'maven' ? `<artifactId>${dependencyName}</artifactId>` : dependencyName);
+        return line.includes(rhdaDependency.ecosystem === 'maven' ? `<artifactId>${rhdaDependency.depName}</artifactId>` : rhdaDependency.depName);
     });
-    
-    if (rhdaDependency.issues) {
-        
-        const fetchedResults = fetchResults(
-            rhdaDependency.issues,
-            manifestFilePath, 
-            startLine, 
-            dependencyName,
-            dependencyVersion,
-            ecosystem
-        );
 
-        results.push(...fetchedResults[0]);
-        rules.push(...fetchedResults[1]);
-    }   
+    const results: sarif.Result[] = [];
+    const rules: sarif.ReportingDescriptor[] = [];
+    if (rhdaDependency.issues && rhdaDependency.issues.length > 0) {
+    
+        rhdaDependency.issues.forEach((issue) => {
+            let textMessage = `This line introduces a "${issue.title}" vulnerability with `
+                + `${issue.severity} severity.\n`
+                + `Vulnerable dependency is ${rhdaDependency.depName} version ${rhdaDependency.depVersion}.`;
+
+            if (issue.remediation.trustedContent) {
+                textMessage = `${textMessage}\nRecommended remediation version: ${resolveVersionFromReference(issue.remediation.trustedContent.ref)}`;
+            }
+
+            const result = fetchResult(
+                issue.id,
+                textMessage,
+                manifestFilePath,
+                startLine +  (rhdaDependency.ecosystem === 'maven' ? 2 : 1),
+            )
+
+            const rule = fetchIssueRules(issue);
+
+            rules.push(rule);
+            results.push(result);
+        });
+
+    }  else if (!refHasIssues && rhdaDependency.recommendationRef) {
+
+        let textMessage = `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
+
+        const result = fetchResult(
+            rhdaDependency.recommendationRef,
+            textMessage,
+            manifestFilePath,
+            startLine +  (rhdaDependency.ecosystem === 'maven' ? 2 : 1),
+        )
+
+        const rule = fetchRecomendationRules(rhdaDependency.recommendationRef);
+
+        rules.push(rule);
+        results.push(result);
+    }
 
     return [ results, rules ];
 }
 
-function fetchResults(
-    /*
-    * creates one single result
-    */
-
-    rhdaIssues: types.RhdaIssues[],
+function fetchResult(
+    ruleId: string,
+    textMessage: string,
     manifestFilePath: string, 
     startLine: number,
-    dependencyName: string,
-    dependencyVersion: string,
-    ecosystem: string
-): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
+){
+    const message: sarif.Message = {
+        text: textMessage,
+    };
+    const artifactLocation: sarif.ArtifactLocation = {
+        // GitHub seems to fail to find the file if windows paths are used
+        uri: manifestFilePath.split(path.sep).join(path.posix.sep),
+        // uri: manifestFile.slice(manifestFile.lastIndexOf("/") + 1),
+        // uriBaseId: manifestFile.slice(0, manifestFile.lastIndexOf("/")),
+    };
+    const region: sarif.Region = {
+        startLine: startLine,
+    };
+    const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation,
+        region,
+    };
+    const location: sarif.Location = {
+        physicalLocation,
+    };
 
-    const results: sarif.Result[] = [];
-    const rules: sarif.ReportingDescriptor[] = [];
-    rhdaIssues.forEach((issue) => {
-        const ruleId = issue.id;
-        let textMessage = `This line introduces a "${issue.title}" vulnerability with `
-            + `${issue.severity} severity.\n`
-            + `Vulnerable dependency is ${dependencyName} version ${dependencyVersion}.`;
+    const result: sarif.Result = {
+        ruleId,
+        message,
+        locations: [ location ],
+    };
 
-        if (issue.remediation.trustedContent) {
-            textMessage = `${textMessage}\nRecommended remediation version: ${resolveVersionFromReference(issue.remediation.trustedContent.ref)}`;
-        }
-
-        const message: sarif.Message = {
-            text: textMessage,
-        };
-        const artifactLocation: sarif.ArtifactLocation = {
-            // GitHub seems to fail to find the file if windows paths are used
-            uri: manifestFilePath.split(path.sep).join(path.posix.sep),
-            // uri: manifestFile.slice(manifestFile.lastIndexOf("/") + 1),
-            // uriBaseId: manifestFile.slice(0, manifestFile.lastIndexOf("/")),
-        };
-        const region: sarif.Region = {
-            startLine: startLine +  (ecosystem === 'maven' ? 2 : 1),
-        };
-        const physicalLocation: sarif.PhysicalLocation = {
-            artifactLocation,
-            region,
-        };
-        const location: sarif.Location = {
-            physicalLocation,
-        };
-
-        const result: sarif.Result = {
-            ruleId,
-            message,
-            locations: [ location ],
-        };
-
-        results.push(result);
-
-        const fetchedRules = fetchRules(issue);
-
-        rules.push(fetchedRules);
-
-    });
-
-    return [ results, rules ];
-
+    return result;
 }
