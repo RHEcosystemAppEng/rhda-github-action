@@ -2,8 +2,8 @@ import * as sarif from "sarif";
 
 import * as types from './types.js';
 
-export function fetchRules(
-    issueData: types.RhdaIssues
+export function fetchIssueRules(
+    issueData: types.IIssue
 ): sarif.ReportingDescriptor {
     const id = issueData.id;
 
@@ -42,6 +42,32 @@ export function fetchRules(
         defaultConfiguration,
         properties,
     };
+
+    return rule;
+}
+
+export function fetchRecomendationRules(
+    recommendation: string,
+    id: string
+): sarif.ReportingDescriptor {
+
+    let sev: sarif.ReportingConfiguration.level = "note";
+
+    const shortDescription: sarif.MultiformatMessageString = {
+        text: `Recommendation`
+    };
+
+    const defaultConfiguration = {
+        level: sev,
+    };
+    
+    const rule: sarif.ReportingDescriptor = {
+        id,
+        shortDescription,
+        defaultConfiguration,
+    };
+
+    console.log(`*******fetching Recommended results ${JSON.stringify(rule)} ********* `)
 
     return rule;
 }

@@ -3,7 +3,7 @@ import * as fs from "fs";
 import path from 'path';
 
 import * as types from './types.js';
-import { fetchRules } from './rules.js';
+import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
 
 function resolveDependencyFromReference(ref: string): string {
     return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
@@ -29,49 +29,52 @@ export function rhdaToResult(
     * creates results
     */
 
-    rhdaDependency: types.RhdaDependency,
+    rhdaDependency: types.IDependencyData,
     manifestFilePath: string,
+    lines: string[],
 ): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
     const results: sarif.Result[] = [];
     const rules: sarif.ReportingDescriptor[] = [];
-    const manifestData = fs.readFileSync(manifestFilePath, "utf-8");
-    const lines = manifestData.split(/\r\n|\n/);
-    const dependencyRef: string = rhdaDependency.ref;
-
-    let resolvedDependencyref = resolveDependencyFromReference(dependencyRef);
-    let dependencyVersion = resolveVersionFromReference(dependencyRef);
-    let ecosystem = resolveEcosystemFromReference(dependencyRef);
-    let dependencyName = resolvedDependencyref.split('@')[0];
-    dependencyName = ecosystem === 'maven' ? dependencyName.split('/')[1] : dependencyName;
 
     const startLine = lines.findIndex((line) => {
-        return line.includes(ecosystem === 'maven' ? `<artifactId>${dependencyName}</artifactId>` : dependencyName);
+        return line.includes(rhdaDependency.ecosystem === 'maven' ? `<artifactId>${rhdaDependency.depName}</artifactId>` : rhdaDependency.depName);
     });
     
     if (rhdaDependency.issues) {
         
-        const fetchedResults = fetchResults(
+        const fetchedResults = fetchIssueResults(
             rhdaDependency.issues,
             manifestFilePath, 
             startLine, 
-            dependencyName,
-            dependencyVersion,
-            ecosystem
+            rhdaDependency.depName,
+            rhdaDependency.depVersion,
+            rhdaDependency.ecosystem
         );
 
         results.push(...fetchedResults[0]);
         rules.push(...fetchedResults[1]);
-    }   
+    }  else if (rhdaDependency.recommendationRef) {
+        console.log(`*******Recommended ${rhdaDependency.recommendationRef} ********* `)
+        const fetchedResults = fetchReccomendationResults(
+            rhdaDependency.recommendationRef,
+            manifestFilePath, 
+            startLine, 
+            rhdaDependency.depName,
+        );
+
+        results.push(...fetchedResults[0]);
+        rules.push(...fetchedResults[1]);
+    }
 
     return [ results, rules ];
 }
 
-function fetchResults(
+function fetchIssueResults(
     /*
     * creates one single result
     */
 
-    rhdaIssues: types.RhdaIssues[],
+    rhdaIssues: types.IIssue[],
     manifestFilePath: string, 
     startLine: number,
     dependencyName: string,
@@ -81,7 +84,9 @@ function fetchResults(
 
     const results: sarif.Result[] = [];
     const rules: sarif.ReportingDescriptor[] = [];
+
     rhdaIssues.forEach((issue) => {
+        
         const ruleId = issue.id;
         let textMessage = `This line introduces a "${issue.title}" vulnerability with `
             + `${issue.severity} severity.\n`
@@ -119,11 +124,65 @@ function fetchResults(
 
         results.push(result);
 
-        const fetchedRules = fetchRules(issue);
+        const fetchedRules = fetchIssueRules(issue);
 
         rules.push(fetchedRules);
 
     });
+
+    return [ results, rules ];
+
+}
+
+function fetchReccomendationResults(
+    /*
+    * creates one single result
+    */
+
+    recommendation: string,
+    manifestFilePath: string, 
+    startLine: number,
+    ecosystem: string
+): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
+
+    const results: sarif.Result[] = [];
+    const rules: sarif.ReportingDescriptor[] = [];
+
+    const ruleId = recommendation+startLine.toString();
+    let textMessage = `Recommended Red Hat verified version: ${recommendation}.`;
+
+    const message: sarif.Message = {
+        text: textMessage,
+    };
+    const artifactLocation: sarif.ArtifactLocation = {
+        // GitHub seems to fail to find the file if windows paths are used
+        uri: manifestFilePath.split(path.sep).join(path.posix.sep),
+        // uri: manifestFile.slice(manifestFile.lastIndexOf("/") + 1),
+        // uriBaseId: manifestFile.slice(0, manifestFile.lastIndexOf("/")),
+    };
+    const region: sarif.Region = {
+        startLine: startLine +  (ecosystem === 'maven' ? 2 : 1),
+    };
+    const physicalLocation: sarif.PhysicalLocation = {
+        artifactLocation,
+        region,
+    };
+    const location: sarif.Location = {
+        physicalLocation,
+    };
+
+    const result: sarif.Result = {
+        ruleId,
+        message,
+        locations: [ location ],
+    };
+
+    results.push(result);
+    console.log(`*******fetching Recommended results ${JSON.stringify(result)} ********* `)
+
+    const fetchedRules = fetchRecomendationRules(recommendation, ruleId);
+
+    rules.push(fetchedRules);
 
     return [ results, rules ];
 
