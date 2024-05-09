@@ -25,26 +25,27 @@ async function run(): Promise<void> {
 
   /* Generated RHDA report */
 
-  const manifestFilePath = await resolveManifestFilePath();
+  const manifestFilePath: string = await resolveManifestFilePath();
 
-  const rhdaReportJson = await generateRHDAReport(manifestFilePath);
+  const rhdaReportJson: any = await generateRHDAReport(manifestFilePath);
 
   /* Save RHDA report to file */
 
-  const reportFilePath = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`);
-  await utils.writeReportToFile(JSON.stringify(rhdaReportJson,null,4), reportFilePath);
+  const rhdaReportJsonFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`);
+  await utils.writeToFile(JSON.stringify(rhdaReportJson,null,4), rhdaReportJsonFilePath);
   
+  ghCore.info(`✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`);
   ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
 
   /* Convert to SARIF and upload SARIF */
 
-  await handleSarif(rhdaReportJson, manifestFilePath, sha, ref, analysisStartTime);
+  const rhdaReportSarifFilePath: string = await handleSarif(rhdaReportJson, manifestFilePath, sha, ref, analysisStartTime);
 
   /* Label the PR with the scan status, if applicable */
 
   /* Handle artifacts */
 
-  await generateArtifacts([reportFilePath]);
+  await generateArtifacts([rhdaReportJsonFilePath, rhdaReportSarifFilePath]);
 
 }
 

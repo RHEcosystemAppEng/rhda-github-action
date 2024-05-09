@@ -9,9 +9,9 @@ export function getEnvVar(envName: string): string {
     return value;
 }
 
-export function writeReportToFile(data, path) {
+export function writeToFile(data, path) {
     try {
-        fs.writeFileSync(path, data);
+        fs.writeFileSync(path, data, "utf-8");
     } catch (err) {
         throw (err);
     }

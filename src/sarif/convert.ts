@@ -1,7 +1,6 @@
 import * as ghCore from '@actions/core';
 import * as sarif from "sarif";
 import * as fs from "fs";
-import path from 'path';
 
 import * as result from './results.js';
 import * as types from './types.js';
@@ -30,6 +29,32 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
         return isDefined(sourceData, 'dependencies') ? sourceData.dependencies : [];
     }
 
+    const getDependencyData = (d: any, source: types.ISource): types.IDependencyData => {
+        if (isDefined(d, 'ref')) {
+
+            const issues: types.IIssue[] = isDefined(d, 'issues') ? d.issues : null;
+            const transitives: types.IDependencyData[] = isDefined(d, 'transitive') ? d.transitive.map(t => getDependencyData(t, source)) : null;
+
+            let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
+            let dependencyVersion = resolveVersionFromReference(d.ref);
+            let ecosystem = resolveEcosystemFromReference(d.ref);
+            dependencyName = ecosystem === 'maven' ? dependencyName.split('/')[1] : dependencyName;
+
+            return {
+                ref: d.ref,
+                depName: dependencyName,
+                depVersion: dependencyVersion,
+                ecosystem: ecosystem,
+                providerId: source.providerId,
+                sourceId: source.sourceId,
+                issues: issues,
+                transitives: transitives,
+                recommendationRef: issues && issues.length > 0 ? '' : getRecommendation(d)
+            };
+        }
+        return null;
+    }
+
     if (isDefined(rhdaData, 'providers')) {
         Object.entries(rhdaData.providers).map(([providerName, providerData]) => {
             if (isDefined(providerData, 'status', 'ok') && providerData.status.ok) {
@@ -54,35 +79,23 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
 
         sources.forEach(source => {
             source.dependencies.forEach(d => {
-                if (isDefined(d, 'ref')) {
-
-                    const issues: types.IIssue[] = isDefined(d, 'issues') ? d.issues : null;
-
-                    let resolvedDependencyref = resolveDependencyFromReference(d.ref);
-                    let dependencyVersion = resolveVersionFromReference(d.ref);
-                    let ecosystem = resolveEcosystemFromReference(d.ref);
-                    let dependencyName = resolvedDependencyref.split('@')[0];
-                    dependencyName = ecosystem === 'maven' ? dependencyName.split('/')[1] : dependencyName;
-
-                    const dd = {
-                        depName: dependencyName,
-                        depVersion: dependencyVersion,
-                        ecosystem: ecosystem,
-                        providerId: source.providerId,
-                        sourceId: source.sourceId,
-                        issues: issues,
-                        recommendationRef: issues && issues.length > 0 ? '' : getRecommendation(d)
-                    };
-
-                    dependencies[d.ref] = dependencies[d.ref] || [];
-                    dependencies[d.ref].push(dd);
+                const dd = getDependencyData(d, source);
+                if (dd) {
+                    dependencies[dd.ref] = dependencies[dd.ref] || [];
+                    dependencies[dd.ref].push(dd);
                 }
             });
         });
     }
 
     Object.entries(dependencies).map(([ref, dependencyData]: [string, types.IDependencyData[]]) => {
-        const refHasIssues = dependencyData.some(data => data.issues && data.issues.length > 0);
+        const refHasIssues = dependencyData.some(dd => {
+            if (dd.issues && dd.issues.length > 0) { 
+                return true; 
+            } else {
+                return dd.transitives && dd.transitives.length > 0 && dd.transitives.some(td => td.issues && td.issues.length > 0);
+            }
+        });
         dependencyData.forEach((dd: types.IDependencyData) => {
             const res = result.rhdaToResult(dd, manifestFilePath, lines, refHasIssues);
                     finalResults.push(...res[0]);
@@ -115,7 +128,7 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
     };
 }
 
-export async function generateSarif(rhdaReportJson: any, manifestFilePath: string): Promise<string> {
+export async function generateSarif(rhdaReportJson: any, manifestFilePath: string): Promise<any> {
     /*
     * creates a SARIF and writes it to file
     */
@@ -126,16 +139,7 @@ export async function generateSarif(rhdaReportJson: any, manifestFilePath: strin
         throw new Error(`No $schema key for SARIF file, cannot proceed.`);
     }
 
-    const jsonExt = path.extname(path.join('.','redhat-dependency-analytics-report.json'));
-    const jsonBasename = path.basename(path.join('.','redhat-dependency-analytics-report.json'));
-
-    const sarifBasename = jsonBasename.replace(jsonExt, ".sarif");
-    // eg crda_analysis_report.json -> crda_analysis_report.sarif
-    const sarifPath = path.resolve(".", sarifBasename);
-
-    await fs.writeFileSync(sarifPath, JSON.stringify(convertedSarif, undefined, 4), "utf-8");
-
-    return sarifPath;
+    return convertedSarif;
 }
 
 function resolveDependencyFromReference(ref: string): string {

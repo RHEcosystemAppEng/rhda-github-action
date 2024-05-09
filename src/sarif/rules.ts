@@ -3,7 +3,8 @@ import * as sarif from "sarif";
 import * as types from './types.js';
 
 export function fetchIssueRules(
-    issueData: types.IIssue
+    issueData: types.IIssue,
+    directRef: string,
 ): sarif.ReportingDescriptor {
     const id = issueData.id;
 
@@ -13,6 +14,10 @@ export function fetchIssueRules(
     }
     if (issueData.severity === "HIGH" || issueData.severity === "CRITICAL") {
         sev = "error";
+    }
+
+    const help: sarif.MultiformatMessageString = {
+        text: `Introduced through ${directRef}`,
     }
 
     const shortDescription: sarif.MultiformatMessageString = {
@@ -41,6 +46,7 @@ export function fetchIssueRules(
         fullDescription,
         defaultConfiguration,
         properties,
+        help
     };
 
     return rule;
@@ -55,7 +61,7 @@ export function fetchRecomendationRules(
     let sev: sarif.ReportingConfiguration.level = "note";
 
     const shortDescription: sarif.MultiformatMessageString = {
-        text: `Recommendation`
+        text: `Red Hat recommendation`
     };
 
     const defaultConfiguration = {

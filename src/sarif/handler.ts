@@ -5,15 +5,19 @@ import { Inputs, Outputs } from '../generated/inputs-outputs.js';
 import * as convert from './convert.js';
 import * as upload from './upload.js';
 import * as utils from '../utils/utils.js'
+import path from 'path';
 
-export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, sha: string, ref: string, analysisStartTime: string) {
+export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, sha: string, ref: string, analysisStartTime: string): Promise<string> {
     
-    const rhdaReportSarifPath = await convert.generateSarif(rhdaReportJson, manifestFilePath);
+    const rhdaReportSarif = await convert.generateSarif(rhdaReportJson, manifestFilePath);
 
+    const rhdaReportSarifFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`);
+    await utils.writeToFile(JSON.stringify(rhdaReportSarif,null,4), rhdaReportSarifFilePath);
+    
     ghCore.info(`ℹ️ Successfully converted RHDA JSON report to SARIF`);
 
-    ghCore.info(`✍️ Setting output "${Outputs.RHDA_REPORT_SARIF}" to ${rhdaReportSarifPath}`);
-    ghCore.setOutput(Outputs.RHDA_REPORT_SARIF, utils.escapeWindowsPathForActionsOutput(rhdaReportSarifPath));
+    ghCore.info(`✍️ Setting output "${Outputs.RHDA_REPORT_SARIF}" to ${rhdaReportSarifFilePath}`);
+    ghCore.setOutput(Outputs.RHDA_REPORT_SARIF, utils.escapeWindowsPathForActionsOutput(rhdaReportSarifFilePath));
 
     const uploadSarif = ghCore.getBooleanInput(Inputs.UPLOAD_SARIF);
     if (uploadSarif) {
@@ -24,10 +28,12 @@ export async function handleSarif(rhdaReportJson: any, manifestFilePath: string,
         //     || (prData.baseRepo.owner === prData.headRepo.owner && prData.baseRepo.repo === prData.headRepo.repo);
 
         await upload.uploadSarifFile(
-            githubToken, rhdaReportSarifPath, analysisStartTime, sha, ref, github.context.repo, undefined,
+            githubToken, rhdaReportSarifFilePath, analysisStartTime, sha, ref, github.context.repo, undefined,
         );
     }
     else {
         ghCore.info(`⏩ Input "${Inputs.UPLOAD_SARIF}" is false, skipping SARIF upload.`);
     }
+
+    return rhdaReportSarifFilePath;
 }

@@ -48,12 +48,14 @@ export interface RhdaTrustedContent {
  * Represents data specification related to a dependency.
  */
 export interface IDependencyData {
+    ref: string;
     depName: string;
     depVersion: string;
     ecosystem: string;
     providerId: string;
     sourceId: string;
     issues: IIssue[] | null;
+    transitives: IDependencyData[] | null;
     recommendationRef: string | '';
 }
 

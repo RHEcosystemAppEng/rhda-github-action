@@ -36,12 +36,14 @@ export function rhdaToResult(
 
     const results: sarif.Result[] = [];
     const rules: sarif.ReportingDescriptor[] = [];
-    if (rhdaDependency.issues && rhdaDependency.issues.length > 0) {
-    
-        rhdaDependency.issues.forEach((issue) => {
+
+    const generateIssueResults = (issues: types.IIssue[], dependencyData: types.IDependencyData,isDirect: boolean) => {
+        issues.forEach((issue) => {
             let textMessage = `This line introduces a "${issue.title}" vulnerability with `
                 + `${issue.severity} severity.\n`
-                + `Vulnerable dependency is ${rhdaDependency.depName} version ${rhdaDependency.depVersion}.`;
+                + `Vulnerability data provider is ${dependencyData.providerId}.\n`
+                + `Vulnerability data source is ${dependencyData.sourceId}.\n`
+                + `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depName} version ${dependencyData.depVersion}.`;
 
             if (issue.remediation.trustedContent) {
                 textMessage = `${textMessage}\nRecommended remediation version: ${resolveVersionFromReference(issue.remediation.trustedContent.ref)}`;
@@ -51,14 +53,28 @@ export function rhdaToResult(
                 issue.id,
                 textMessage,
                 manifestFilePath,
-                startLine +  (rhdaDependency.ecosystem === 'maven' ? 2 : 1),
+                startLine +  (dependencyData.ecosystem === 'maven' ? 2 : 1),
             )
 
-            const rule = fetchIssueRules(issue);
+            const rule = fetchIssueRules(issue, resolveDependencyFromReference(rhdaDependency.ref));
 
             rules.push(rule);
             results.push(result);
         });
+    }
+    
+    if (refHasIssues) {
+        if (rhdaDependency.issues && rhdaDependency.issues.length > 0) {
+            generateIssueResults(rhdaDependency.issues, rhdaDependency, true);
+        }
+
+        if (rhdaDependency.transitives && rhdaDependency.transitives.length > 0) {
+            rhdaDependency.transitives.forEach((td: types.IDependencyData) => {
+                if (td.issues && td.issues.length > 0) {
+                    generateIssueResults(td.issues, td, false);
+                }
+            })
+        }
 
     }  else if (!refHasIssues && rhdaDependency.recommendationRef) {
 

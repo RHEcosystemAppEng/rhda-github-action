@@ -34,7 +34,7 @@ inputs:
     default: "true"
   upload_artifact:
     description: |
-      Upload the generated RHDA report JSON file as an artifact.
+      Upload the generated RHDA report JSON file and SARIF file as an artifact.
     required: false
     default: "true"
   artifact_filename:
