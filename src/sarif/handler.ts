@@ -1,15 +1,15 @@
 import * as ghCore from '@actions/core';
 import * as github from "@actions/github";
+import path from 'path';
 
 import { Inputs, Outputs } from '../generated/inputs-outputs.js';
 import * as convert from './convert.js';
 import * as upload from './upload.js';
-import * as utils from '../utils/utils.js'
-import path from 'path';
+import * as utils from '../utils.js'
 
-export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, sha: string, ref: string, analysisStartTime: string): Promise<string> {
+export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, sha: string, ref: string, analysisStartTime: string): Promise<{rhdaReportSarifFilePath: string, VulnerabilitySeverity: string}> {
     
-    const rhdaReportSarif = await convert.generateSarif(rhdaReportJson, manifestFilePath);
+    const { sarifObject: rhdaReportSarif, VulnerabilitySeverity } = await convert.generateSarif(rhdaReportJson, manifestFilePath);
 
     const rhdaReportSarifFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`);
     await utils.writeToFile(JSON.stringify(rhdaReportSarif,null,4), rhdaReportSarifFilePath);
@@ -35,5 +35,5 @@ export async function handleSarif(rhdaReportJson: any, manifestFilePath: string,
         ghCore.info(`⏩ Input "${Inputs.UPLOAD_SARIF}" is false, skipping SARIF upload.`);
     }
 
-    return rhdaReportSarifFilePath;
+    return { rhdaReportSarifFilePath, VulnerabilitySeverity };
 }

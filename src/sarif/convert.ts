@@ -5,9 +5,9 @@ import * as fs from "fs";
 import * as result from './results.js';
 import * as types from './types.js';
 import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION } from '../constants.js';
-import { isDefined } from '../utils/utils.js'
+import { isDefined } from '../utils.js'
 
-function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
+function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string): { sarifObject: any, VulnerabilitySeverity: string } {
     /*
     * creates results and rules and structures SARIF
     */
@@ -17,6 +17,7 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
     const dependencies: Map<string, types.IDependencyData[]> = new Map<string, types.IDependencyData[]>()
     const failedProviders: string[] = [];
     const sources: types.ISource[] = [];
+    let vulSeverity: types.VulnerabilitySeverity = "none";
         
     const manifestData = fs.readFileSync(manifestFilePath, "utf-8");
     const lines = manifestData.split(/\r\n|\n/);
@@ -25,8 +26,20 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
         return isDefined(dependency, 'recommendation') ? resolveVersionFromReference(dependency.recommendation) : '';
     }
 
+    const getSummary = (sourceData: any): types.ISummary => {
+        return isDefined(sourceData, 'summary') ? sourceData.summary : null;
+    }
+
     const getDependencies = (sourceData: any): any[] => {
         return isDefined(sourceData, 'dependencies') ? sourceData.dependencies : [];
+    }
+
+    const updateVulnerabilitySeverity = (summary: types.ISummary): void => {
+        if ( summary.critical > 0 || summary.high > 0) {
+            vulSeverity = 'error';
+        } else if ( vulSeverity != 'error' && (summary.medium > 0 || summary.low > 0)) {
+            vulSeverity = 'warning';
+        }
     }
 
     const getDependencyData = (d: any, source: types.ISource): types.IDependencyData => {
@@ -60,7 +73,7 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
             if (isDefined(providerData, 'status', 'ok') && providerData.status.ok) {
                 if (isDefined(providerData, 'sources')) {
                     Object.entries(providerData.sources).map(([sourceName, sourceData]) => {
-                        sources.push({ providerId: providerName, sourceId: sourceName, dependencies: getDependencies(sourceData) });
+                        sources.push({ providerId: providerName, sourceId: sourceName, dependencies: getDependencies(sourceData), summary: getSummary(sourceData)});
                     });
                 }
             } else {
@@ -78,6 +91,9 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
         }
 
         sources.forEach(source => {
+
+            updateVulnerabilitySeverity(source.summary);
+
             source.dependencies.forEach(d => {
                 const dd = getDependencyData(d, source);
                 if (dd) {
@@ -112,34 +128,37 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
     ghCore.debug(`Sarif schema version is ${SARIF_SCHEMA_VERSION}`);
 
     return {
-        $schema: SARIF_SCHEMA_URL,
-        version: SARIF_SCHEMA_VERSION,
-        runs: [
-            {
-                tool: {
-                    driver: {
-                        name: "Red Hat Dependency Analytics",
-                        rules: finalRules,
+        sarifObject: {
+            $schema: SARIF_SCHEMA_URL,
+            version: SARIF_SCHEMA_VERSION,
+            runs: [
+                {
+                    tool: {
+                        driver: {
+                            name: "Red Hat Dependency Analytics",
+                            rules: finalRules,
+                        },
                     },
+                    results: finalResults,
                 },
-                results: finalResults,
-            },
-        ],
+            ],
+        },
+        VulnerabilitySeverity: vulSeverity,
     };
 }
 
-export async function generateSarif(rhdaReportJson: any, manifestFilePath: string): Promise<any> {
+export async function generateSarif(rhdaReportJson: any, manifestFilePath: string): Promise<{ sarifObject: any, VulnerabilitySeverity: string }> {
     /*
     * creates a SARIF and writes it to file
     */
 
-    const convertedSarif = rhdaJsonToSarif(rhdaReportJson, manifestFilePath);
+    const { sarifObject, VulnerabilitySeverity } = rhdaJsonToSarif(rhdaReportJson, manifestFilePath);
 
-    if (!convertedSarif.$schema) {
+    if (!sarifObject.$schema) {
         throw new Error(`No $schema key for SARIF file, cannot proceed.`);
     }
 
-    return convertedSarif;
+    return { sarifObject, VulnerabilitySeverity };
 }
 
 function resolveDependencyFromReference(ref: string): string {

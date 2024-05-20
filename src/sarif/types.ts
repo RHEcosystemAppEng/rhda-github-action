@@ -65,26 +65,36 @@ export interface IDependencyData {
 export interface ISource {
     providerId: string;
     sourceId: string;
+    summary: ISummary | null;
     dependencies: any[];
 }
 
+export interface ISummary {
+    critical: number | 0;
+    high: number | 0;
+    medium: number | 0;
+    low: number | 0;
+}
+
 export interface IIssue {
-    id: string,
-    title: string,
-    severity: string,
-    cves: string[],
-    cvss: ICVSS,
-    remediation: IRemediation,
+    id: string;
+    title: string;
+    severity: string;
+    cves: string[];
+    cvss: ICVSS;
+    remediation: IRemediation;
 }
 
 export interface ICVSS {
-    cvss: string,
+    cvss: string;
 }
 
 export interface IRemediation {
-    trustedContent: ITrustedContent | null,
+    trustedContent: ITrustedContent | null;
 }
 
 export interface ITrustedContent {
-    ref: string,
+    ref: string;
 }
+
+export type VulnerabilitySeverity = "none" | "warning" | "error";

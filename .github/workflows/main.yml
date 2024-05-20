@@ -1,5 +1,9 @@
-on: [push]
+name: RHDA Github Action Workflow
 
+on:
+  pull_request_target:
+    types: [assigned, opened, synchronize, reopened, edited]
+  
 jobs:
   rhda_job:
     runs-on: ubuntu-latest
