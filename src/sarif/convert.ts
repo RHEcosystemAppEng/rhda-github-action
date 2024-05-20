@@ -5,7 +5,7 @@ import * as fs from "fs";
 import * as result from './results.js';
 import * as types from './types.js';
 import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION } from '../constants.js';
-import { isDefined } from '../utils/utils.js'
+import { isDefined } from '../utils.js'
 
 function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string) {
     /*
