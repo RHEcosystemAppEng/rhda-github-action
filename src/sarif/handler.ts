@@ -1,11 +1,11 @@
 import * as ghCore from '@actions/core';
 import * as github from "@actions/github";
+import path from 'path';
 
 import { Inputs, Outputs } from '../generated/inputs-outputs.js';
 import * as convert from './convert.js';
 import * as upload from './upload.js';
-import * as utils from '../utils/utils.js'
-import path from 'path';
+import * as utils from '../utils.js'
 
 export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, sha: string, ref: string, analysisStartTime: string): Promise<string> {
     
