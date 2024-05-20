@@ -11,6 +11,15 @@ import { handleSarif } from './sarif/handler.js';
 
 async function run(): Promise<void> {
 
+  ghCore.info(`Working directory is ${process.cwd()}`);
+
+  ghCore.debug(`Runner OS is ${utils.getOS()}`);
+  ghCore.debug(`Node version is ${process.version}`);
+
+  const prRawData = github.context.payload.pull_request;
+  console.log(`this is the prRawData\n: ${JSON.stringify(prRawData)}`);
+  return;
+
   const analysisStartTime = new Date().toISOString();
   ghCore.debug(`Analysis started at ${analysisStartTime}`);
 
