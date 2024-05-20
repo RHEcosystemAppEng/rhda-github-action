@@ -1,5 +1,10 @@
-on: [push]
+name: RHDA Github Action Workflow
 
+on:
+ workflow_dispatch:
+ pull_request:
+   types: [opened, synchronize, reopened, labeled, edited]
+  
 jobs:
   rhda_job:
     runs-on: ubuntu-latest
@@ -27,6 +32,13 @@ jobs:
 
       - name: Compile Typescript code
         run: npm run compile
+
+      - name: check branch
+        working-directory: .
+        run: echo $(git branch --show-current)
+
+      - name: check branch
+        run: echo $GITHUB_REF
 
       - name: Test RHDA
         id: test-rhda

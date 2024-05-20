@@ -1,13 +1,8 @@
 import * as ghCore from '@actions/core';
-import * as sarif from "sarif";
-import * as fs from "fs";
 import { Octokit } from "@octokit/core";
 import * as github from "@actions/github";
-import { URLSearchParams } from "url";
 
-import { Inputs, Outputs } from '../generated/inputs-outputs.js';
-import * as utils from '../utils/utils.js'
-import path from 'path';
+import * as utils from '../utils.js'
 
 export async function uploadSarifFile(
     ghToken: string, sarifPath: string,
