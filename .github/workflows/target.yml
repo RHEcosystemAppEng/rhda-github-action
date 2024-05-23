@@ -9,5 +9,13 @@ jobs:
     runs-on: ubuntu-latest
     name: Testing target
     steps:
-      - name: get git version
-        run:  git --version     
+      - name: get repo details
+        run: |
+          echo "Git version:"
+          git --version
+          echo "Repository URL:"
+          git config --get remote.origin.url
+          echo "Repository owner:"
+          echo "${{ github.repository_owner }}"
+          echo "Branch name:"
+          echo "${{ github.event.pull_request.head.ref }}"
