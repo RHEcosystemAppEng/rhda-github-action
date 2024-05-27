@@ -1,0 +1,46 @@
+{
+  "name": "rhda-github-action",
+  "version": "1.0.0",
+  "description": "This action reflects the Red Hat Dependency Analytics VSCode extension for Github Actions.",
+  "homepage": "https://github.com/RHEcosystemAppEng/rhda-github-action#README.md",
+  "bugs": "https://github.com/RHEcosystemAppEng/rhda-github-action/issues",
+  "repository": "github:RHEcosystemAppEng/rhda-github-action",
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "keywords": [
+    "analysis",
+    "rhda",
+    "exhort",
+    "secure",
+    "supply-chain",
+    "vulnerability"
+  ],
+  "engines": {
+    "node": ">= 20.0.0",
+    "npm": ">= 10.0.0"
+  },
+  "type": "module",
+  "main": "dist/src/index.js",
+  "module": "dist/src/index.js",
+  "author": "",
+  "license": "ISC",
+  "scripts": {
+    "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts",
+    "compile": "tsc -p ./"
+  },
+  "devDependencies": {
+    "@types/node": "^20.11.24",
+    "ts-node": "^10.9.2",
+    "typescript": "^5.3.3"
+  },
+  "dependencies": {
+    "@actions/artifact": "^2.1.4",
+    "@actions/core": "^1.10.1",
+    "@actions/exec": "^1.1.1",
+    "@actions/github": "^6.0.0",
+    "@redhat-actions/action-io-generator": "^1.5.0",
+    "@rhecosystemappeng/exhort-javascript-api": "^0.1.1-ea.26",
+    "@types/sarif": "^2.1.7"
+  }
+}

@@ -1,0 +1,40 @@
+name: RHDA Github Action Workflow
+
+on:
+  pull_request_target:
+    types: [assigned, opened, synchronize, reopened, edited]
+  
+jobs:
+  rhda_job:
+    runs-on: ubuntu-latest
+    name: Testing RHDA action
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          ssh-key: ${{ secrets.DEPLOY_KEY }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          registry-url: 'https://npm.pkg.github.com'
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Create .npmrc
+        run: |
+          echo "@RHEcosystemAppEng:registry=https://npm.pkg.github.com" >> ~/.npmrc
+
+      - name: Install Dependencies
+        run: npm i
+
+      - name: Compile Typescript code
+        run: npm run compile
+
+      - name: Test RHDA
+        id: test-rhda
+        uses: ./ # Uses an action in the root directory
+        with:
+          manifest_file_path: manifests/maven/pom.xml
+        
