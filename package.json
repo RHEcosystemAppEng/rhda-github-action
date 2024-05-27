@@ -40,7 +40,7 @@
     "@actions/exec": "^1.1.1",
     "@actions/github": "^6.0.0",
     "@redhat-actions/action-io-generator": "^1.5.0",
-    "@rhecosystemappeng/exhort-javascript-api": "^0.1.1-ea.26",
+    "@rhecosystemappeng/exhort-javascript-api": "^0.1.1-ea.42",
     "@types/sarif": "^2.1.7"
   }
 }
