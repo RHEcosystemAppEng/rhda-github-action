@@ -9,7 +9,8 @@ const SUPPORTED_FILES = [
     'pom.xml',
     'package.json',
     'go.mod',
-    'requirements.txt'
+    'requirements.txt',
+    'build.gradle'
   ];
   
 
