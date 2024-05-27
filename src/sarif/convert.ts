@@ -6,8 +6,9 @@ import * as result from './results.js';
 import * as types from './types.js';
 import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION } from '../constants.js';
 import { isDefined } from '../utils.js'
+import path from 'path';
 
-function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string): { sarifObject: any, VulnerabilitySeverity: string } {
+function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject: any, VulnerabilitySeverity: string } {
     /*
     * creates results and rules and structures SARIF
     */
@@ -48,13 +49,18 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string): { 
             const issues: types.IIssue[] = isDefined(d, 'issues') ? d.issues : null;
             const transitives: types.IDependencyData[] = isDefined(d, 'transitive') ? d.transitive.map(t => getDependencyData(t, source)) : null;
 
+            let dependencyGroup = null;
             let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
             let dependencyVersion = resolveVersionFromReference(d.ref);
-            let ecosystem = resolveEcosystemFromReference(d.ref);
-            dependencyName = ecosystem === 'maven' ? dependencyName.split('/')[1] : dependencyName;
+            let ecosystem = types.fileNameToEcosystemMappings[path.basename(manifestFilePath)];
+            if (ecosystem === types.MAVEN || ecosystem === types.GRADLE) {
+                dependencyGroup = dependencyName.split('/')[0];
+                dependencyName = dependencyName.split('/')[1];
+            }
 
             return {
                 ref: d.ref,
+                depGroup: dependencyGroup,
                 depName: dependencyName,
                 depVersion: dependencyVersion,
                 ecosystem: ecosystem,
@@ -69,10 +75,10 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string): { 
     }
 
     if (isDefined(rhdaData, 'providers')) {
-        Object.entries(rhdaData.providers).map(([providerName, providerData]) => {
+        Object.entries(rhdaData.providers).map(([providerName, providerData]: [string, any]) => {
             if (isDefined(providerData, 'status', 'ok') && providerData.status.ok) {
                 if (isDefined(providerData, 'sources')) {
-                    Object.entries(providerData.sources).map(([sourceName, sourceData]) => {
+                    Object.entries(providerData.sources).map(([sourceName, sourceData]: [string, any]) => {
                         sources.push({ providerId: providerName, sourceId: sourceName, dependencies: getDependencies(sourceData), summary: getSummary(sourceData)});
                     });
                 }

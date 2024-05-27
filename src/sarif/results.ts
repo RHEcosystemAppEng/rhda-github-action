@@ -31,7 +31,17 @@ export function rhdaToResult(
 ): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
 
     const startLine = lines.findIndex((line) => {
-        return line.includes(rhdaDependency.ecosystem === 'maven' ? `<artifactId>${rhdaDependency.depName}</artifactId>` : rhdaDependency.depName);
+        if (rhdaDependency.ecosystem === types.MAVEN) {
+            return line.includes(`<artifactId>${rhdaDependency.depName}</artifactId>`);
+        } else if (rhdaDependency.ecosystem === types.GRADLE) {
+            const regexGroup = new RegExp(`group:\\s*(['"])${rhdaDependency.depGroup}\\1`);
+            const regexName = new RegExp(`name:\\s*(['"])${rhdaDependency.depName}\\1`);
+            const regexColon = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}`);
+
+            return (regexName.test(line) && regexGroup.test(line)) || regexColon.test(line);
+        } else {
+            return line.includes(rhdaDependency.depName);
+        }
     });
 
     const results: sarif.Result[] = [];
@@ -43,7 +53,7 @@ export function rhdaToResult(
                 + `${issue.severity} severity.\n`
                 + `Vulnerability data provider is ${dependencyData.providerId}.\n`
                 + `Vulnerability data source is ${dependencyData.sourceId}.\n`
-                + `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depName} version ${dependencyData.depVersion}.`;
+                + `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depGroup ? `${dependencyData.depGroup}/` : ''}${dependencyData.depName} version ${dependencyData.depVersion}.`;
 
             if (issue.remediation.trustedContent) {
                 textMessage = `${textMessage}\nRecommended remediation version: ${resolveVersionFromReference(issue.remediation.trustedContent.ref)}`;
@@ -53,7 +63,7 @@ export function rhdaToResult(
                 issue.id,
                 textMessage,
                 manifestFilePath,
-                startLine +  (dependencyData.ecosystem === 'maven' ? 2 : 1),
+                startLine +  (dependencyData.ecosystem === types.MAVEN ? 2 : 1),
             )
 
             const rule = fetchIssueRules(issue, resolveDependencyFromReference(rhdaDependency.ref));
@@ -84,7 +94,7 @@ export function rhdaToResult(
             rhdaDependency.recommendationRef,
             textMessage,
             manifestFilePath,
-            startLine +  (rhdaDependency.ecosystem === 'maven' ? 2 : 1),
+            startLine +  (rhdaDependency.ecosystem === types.MAVEN ? 2 : 1),
         )
 
         const rule = fetchRecomendationRules(rhdaDependency.recommendationRef);
