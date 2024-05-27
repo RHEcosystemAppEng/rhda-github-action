@@ -8,6 +8,12 @@ export enum Inputs {
      */
     ARTIFACT_FILENAME = "artifact_filename",
     /**
+     * Installs Python packages tailored to the Python version in use, disregarding declared versions. Note: Requires settings Match Manifest Versions to be set to false and Use Python Virtual Environment to be set to true.
+     * Required: false
+     * Default: None.
+     */
+    ENABLE_PYTHON_BEST_EFFORTS_INSTALLATION = "enable_python_best_efforts_installation",
+    /**
      * Fail the workflow if vulnerability is found in the project.
      * To set failure when vulnerability severity level is either "error" or "warning" set this input to "warning".
      * By default it is set to fail when severity level is "error",
@@ -28,6 +34,12 @@ export enum Inputs {
      * Default: "go"
      */
     GO_EXECUTABLE_PATH = "go_executable_path",
+    /**
+     * Specifies absolute path of gradle executable.
+     * Required: false
+     * Default: "gradle"
+     */
+    GRADLE_EXECUTABLE_PATH = "gradle_executable_path",
     /**
      * Path to target manifest file for analysis.
      * Required: false
@@ -83,18 +95,6 @@ export enum Inputs {
      */
     RHDA_REPORT_NAME = "rhda_report_name",
     /**
-     * Automates the installation of missing packages in a Python virtual environment when set to true.
-     * Required: false
-     * Default: None.
-     */
-    SET_PYTHON_VIRTUAL_ENVIRONMENT = "set_python_virtual_environment",
-    /**
-     * Snyk token to be used to authenticate to the Red Hat Dependency Analytics.
-     * Required: false
-     * Default: None.
-     */
-    SNYK_TOKEN = "snyk_token",
-    /**
      * Upload the generated RHDA report JSON file and SARIF file as an artifact.
      * Required: false
      * Default: "true"
@@ -107,6 +107,24 @@ export enum Inputs {
      * Default: "true"
      */
     UPLOAD_SARIF = "upload_sarif",
+    /**
+     * Use the Minimal Version Selection (MVS) algorithm to select a set of module versions to use when building Go packages.
+     * Required: false
+     * Default: None.
+     */
+    USE_GO_MVS = "use_go_mvs",
+    /**
+     * Use lightweight pipdeptree command line tool as the data source for building the Python dependency tree. This may significantly enhance analysis time.
+     * Required: false
+     * Default: None.
+     */
+    USE_PIP_DEP_TREE = "use_pip_dep_tree",
+    /**
+     * Automates the installation of missing packages in a Python virtual environment when set to true.
+     * Required: false
+     * Default: None.
+     */
+    USE_PYTHON_VIRTUAL_ENVIRONMENT = "use_python_virtual_environment",
 }
 
 export enum Outputs {

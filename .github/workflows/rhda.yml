@@ -36,5 +36,6 @@ jobs:
         id: test-rhda
         uses: ./ # Uses an action in the root directory
         with:
-          manifest_file_path: manifests/maven/pom.xml
+          manifest_file_path: manifests/golang/go.mod
+          use_python_virtual_environment: true
         

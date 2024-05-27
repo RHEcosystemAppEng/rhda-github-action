@@ -13,15 +13,6 @@ inputs:
     description: Name of the file where the Red Hat Dependency Analytics report will be saved.
     required: false
     default: redhat-dependency-analytics-report
-  snyk_token:
-    description: Snyk token to be used to authenticate to the Red Hat Dependency Analytics.
-    required: false
-  set_python_virtual_environment:
-    description: Automates the installation of missing packages in a Python virtual environment when set to true.
-    required: false
-  match_manifest_version:
-    description: Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
-    required: true
   github_token:
     description: Github token to upload SARIF file to the GitHub
     required: false
@@ -43,10 +34,37 @@ inputs:
       By default it is named as 'redhat-dependency-analytics-report'
     required: false
     default: "redhat-dependency-analytics-report"
+  fail_on:
+    description: |
+      Fail the workflow if vulnerability is found in the project.
+      To set failure when vulnerability severity level is either "error" or "warning" set this input to "warning".
+      By default it is set to fail when severity level is "error",
+      or if you don't want to fail the action set this input to "never"
+    required: false
+    default: "error"
+  use_python_virtual_environment:
+    description: Automates the installation of missing packages in a Python virtual environment when set to true.
+    required: false
+  use_go_mvs:
+    description: Use the Minimal Version Selection (MVS) algorithm to select a set of module versions to use when building Go packages.
+    required: false
+  enable_python_best_efforts_installation:
+    description: 'Installs Python packages tailored to the Python version in use, disregarding declared versions. Note: Requires settings Match Manifest Versions to be set to false and Use Python Virtual Environment to be set to true.'
+    required: false
+  use_pip_dep_tree:
+    description: Use lightweight pipdeptree command line tool as the data source for building the Python dependency tree. This may significantly enhance analysis time.
+    required: false
+  match_manifest_version:
+    description: Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
+    required: true
   mvn_executable_path:
     description: Specifies absolute path of mvn executable.
     required: false
     default: mvn
+  gradle_executable_path:
+    description: Specifies absolute path of gradle executable.
+    required: false
+    default: gradle
   npm_executable_path:
     description: Specifies absolute path of npm executable.
     required: false
@@ -71,14 +89,6 @@ inputs:
     description: Specifies absolute path of pip executable, pip3 takes precedence over pip.
     required: false
     default: pip
-  fail_on:
-    description: |
-      Fail the workflow if vulnerability is found in the project.
-      To set failure when vulnerability severity level is either "error" or "warning" set this input to "warning".
-      By default it is set to fail when severity level is "error",
-      or if you don't want to fail the action set this input to "never"
-    required: false
-    default: "error"
 
 outputs:
   rhda_report_json:
