@@ -8,6 +8,15 @@ export enum Inputs {
      */
     ARTIFACT_FILENAME = "artifact_filename",
     /**
+     * Fail the workflow if vulnerability is found in the project.
+     * To set failure when vulnerability severity level is either "error" or "warning" set this input to "warning".
+     * By default it is set to fail when severity level is "error",
+     * or if you don't want to fail the action set this input to "never"
+     * Required: false
+     * Default: "error"
+     */
+    FAIL_ON = "fail_on",
+    /**
      * Github token to upload SARIF file to the GitHub
      * Required: false
      * Default: "${{ github.token }}"
@@ -86,7 +95,7 @@ export enum Inputs {
      */
     SNYK_TOKEN = "snyk_token",
     /**
-     * Upload the generated RHDA report JSON file as an artifact.
+     * Upload the generated RHDA report JSON file and SARIF file as an artifact.
      * Required: false
      * Default: "true"
      */

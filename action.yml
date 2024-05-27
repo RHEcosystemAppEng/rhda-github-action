@@ -71,6 +71,14 @@ inputs:
     description: Specifies absolute path of pip executable, pip3 takes precedence over pip.
     required: false
     default: pip
+  fail_on:
+    description: |
+      Fail the workflow if vulnerability is found in the project.
+      To set failure when vulnerability severity level is either "error" or "warning" set this input to "warning".
+      By default it is set to fail when severity level is "error",
+      or if you don't want to fail the action set this input to "never"
+    required: false
+    default: "error"
 
 outputs:
   rhda_report_json:

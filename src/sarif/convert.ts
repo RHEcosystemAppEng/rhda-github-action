@@ -82,12 +82,7 @@ function rhdaJsonToSarif(rhdaData: types.RhdaData, manifestFilePath: string): { 
         });
 
         if (failedProviders.length !== 0) {
-            const errMsg = `The component analysis couldn't fetch data from the following providers: [${failedProviders.join(', ')}]`;
-            // connection.console.warn(`Component Analysis Error: ${errMsg}`);
-            // connection.sendNotification('caError', {
-            //     errorMessage: errMsg,
-            //     uri: diagnosticFilePath,
-            // });
+            ghCore.warning(`The component analysis couldn't fetch data from the following providers: [${failedProviders.join(', ')}]`);
         }
 
         sources.forEach(source => {

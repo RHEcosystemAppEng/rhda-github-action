@@ -66,11 +66,7 @@ export function getEnvVar(envName: string): string {
 }
 
 export function writeToFile(data, path) {
-    try {
-        fs.writeFileSync(path, data, "utf-8");
-    } catch (err) {
-        throw (err);
-    }
+    fs.writeFileSync(path, data, "utf-8");
 }
 
 export function escapeWindowsPathForActionsOutput(p: string): string {
@@ -134,7 +130,7 @@ export async function execCommand(
     args: string[], 
     options: ghExec.ExecOptions = {}
 ): Promise<{ exitCode: number, stdout: string, stderr: string }> {
-    ghCore.info(`running "${executable} ${args.join(" ")}"`);
+    ghCore.debug(`running "${executable} ${args.join(" ")}"`);
 
     let stdout = "";
     let stderr = "";
@@ -151,13 +147,8 @@ export async function execCommand(
         }
     };
 
-    try {
-        const exitCode = await ghExec.exec(executable, args, execOptions);
-        return { exitCode, stdout, stderr };
-    } catch (error) {
-        ghCore.setFailed(`Execution failed with error: ${error.message}`);
-        throw error;
-    }
+    const exitCode = await ghExec.exec(executable, args, execOptions);
+    return { exitCode, stdout, stderr };
 }
 
 export async function getCommitSha(): Promise<string> {

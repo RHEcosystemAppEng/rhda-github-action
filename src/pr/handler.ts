@@ -9,7 +9,7 @@ import * as checkout from './checkout.js'
 
 type pullRequest = components["schemas"]["pull-request-simple"];
 
-async function handlePr(): Promise<types.PrData> {
+async function isPr(): Promise<types.PrData | undefined> {
 
     // check if event is pull request
     const prRawData = github.context.payload.pull_request as pullRequest;
@@ -20,11 +20,15 @@ async function handlePr(): Promise<types.PrData> {
 
     // parse PR data
     const pr = parsePrData(prRawData);
-    ghCore.info(`PR number is ${pr.number}`);
+    ghCore.debug(`PR number is ${pr.number}`);
     ghCore.info(
-        `PR authored by ${pr.author} is coming from ${pr.headRepo.htmlUrl} against ${pr.baseRepo.htmlUrl}`
+        `ℹ️ PR authored by ${pr.author} is coming from ${pr.headRepo.htmlUrl} against ${pr.baseRepo.htmlUrl}`
     );
 
+    return pr;
+}
+
+async function handlePr(pr: types.PrData): Promise<void> {
 
     // create and load pr labels
     await createRepoLabels();
@@ -45,8 +49,6 @@ async function handlePr(): Promise<types.PrData> {
 
     // checkout pr
     await checkout.checkoutPr(pr.baseRepo.htmlUrl, pr.number);
-
-    return pr;
 }
 
 function parsePrData(pr: pullRequest): types.PrData {
@@ -78,4 +80,4 @@ function parsePrData(pr: pullRequest): types.PrData {
     };
 }
 
-export { handlePr };
+export { isPr, handlePr };

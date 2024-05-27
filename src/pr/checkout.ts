@@ -1,13 +1,12 @@
 import * as ghCore from '@actions/core';
+import stripAnsi from "strip-ansi";
 
 import { getGitExecutable, execCommand } from "../utils.js";
+import path from 'path';
 
 export async function getOriginalCheckoutBranch(): Promise<string> {
-    const { exitCode, stdout, stderr } = await execCommand(getGitExecutable(), [ "branch", "--show-current" ]);
-    if (exitCode != 0) {
-        throw(new Error(stderr));
-    }
-    return stdout.trim();
+    const branch = (await execCommand(getGitExecutable(), [ "branch", "--show-current" ])).stdout;
+    return branch.trim();
 }
 
 /**
@@ -19,7 +18,7 @@ export async function checkoutPr(baseRepoUrl: string, prNumber: number): Promise
     const remoteName = getPRRemoteName(prNumber);
     const localbranchName = getPRBranchName(prNumber);
 
-    ghCore.info(`Adding remote ${baseRepoUrl}`);
+    ghCore.debug(`Adding remote ${baseRepoUrl}`);
     await execCommand(getGitExecutable(), [ "remote", "add", remoteName, baseRepoUrl ]);
     
     ghCore.info(`⬇️ Checking out PR #${prNumber} to run RHDA analysis.`);

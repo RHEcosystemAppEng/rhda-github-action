@@ -22,7 +22,7 @@ export async function generateArtifacts(files: string[]) {
     let uploadedArtifactId: number = null;
     
     if (uploadArtifact) {
-        ghCore.info(`⏳ Uploading RHDA report JSON file as an artifact...`);
+        ghCore.info(`⏳ Uploading JSON and SARIF files as artifacts...`);
         
         uploadedArtifactId = await uploadArtifacts(artifactName, files);
         

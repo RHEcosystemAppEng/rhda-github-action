@@ -78,10 +78,10 @@ export function getLabelDescription(label: string): string {
 export async function createRepoLabels(): Promise<void> {
     const availableLabels = await getLabels();
     if (availableLabels.length !== 0) {
-        ghCore.info(`Available Repo labels: ${availableLabels.map((s) => `"${s}"`).join(", ")}`);
+        ghCore.debug(`Available Repo labels: ${availableLabels.map((s) => `"${s}"`).join(", ")}`);
     }
     else {
-        ghCore.info("No labels found in the repository");
+        ghCore.debug("No labels found in the repository");
     }
     const labelsToCreate: string[] = [];
     repoLabels.forEach((label) => {
@@ -91,10 +91,10 @@ export async function createRepoLabels(): Promise<void> {
     });
 
     if (labelsToCreate.length !== 0) {
-        ghCore.info(`Labels to create in the repository: ${labelsToCreate.map((s) => `"${s}"`).join(", ")}`);
+        ghCore.debug(`Labels to create in the repository: ${labelsToCreate.map((s) => `"${s}"`).join(", ")}`);
     }
     else {
-        ghCore.info("Required labels are already present in the repository. "
+        ghCore.debug("Required labels are already present in the repository. "
         + "No labels need to be created.");
     }
 

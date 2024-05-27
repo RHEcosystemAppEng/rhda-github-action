@@ -22,7 +22,7 @@ export async function resolveManifestFilePath (): Promise<string> {
             throw new Error(`File ${manifestFilename} is not supported!!`);
         }
 
-        ghCore.info(`"${Inputs.MANIFEST_FILE_PATH}" is "${manifestFilePathInput}"`);
+        ghCore.info(`ℹ️ "${Inputs.MANIFEST_FILE_PATH}" is "${manifestFilePathInput}"`);
         return manifestFilePathInput;
     }
 
@@ -33,7 +33,7 @@ export async function resolveManifestFilePath (): Promise<string> {
 
     const manifestFilePath = path.join(DEFAULT_MANIFEST_DIR, manifestFilename);
     
-    ghCore.info(`Manifest file path is ${manifestFilePath}`);
+    ghCore.info(`ℹ️ Manifest file path is ${manifestFilePath}`);
 
     return manifestFilePath;
 }

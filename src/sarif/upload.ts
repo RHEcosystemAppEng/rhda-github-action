@@ -42,16 +42,12 @@ export async function uploadSarifFile(
         }
     }
     catch (err) {
-        throw (err);
-        // throw utils.getBetterHttpError(err);
+        throw utils.prettifyHttpError(err);
     }
 
     if (!sarifId) {
         throw new Error(`Upload SARIF response from GitHub did not include an upload ID`);
     }
-
-    // Since sarif upload takes few seconds, so waiting for it to finish.
-    // Generally it takes less than a minute.
 
     try {
         ghCore.startGroup(`⏳ Waiting for SARIF to upload...`);
@@ -63,24 +59,24 @@ export async function uploadSarifFile(
 
     ghCore.info(`✅ Successfully uploaded SARIF file`);
 
-    // if (printSecurityTabLink) {
-    //     ghCore.debug(`Printing report link`);
+    if (printSecurityTabLink) {
+        ghCore.debug(`Printing link to Code Scanning results`);
 
-    //     let branch;
-    //     const BRANCH_REF_PREFIX = "refs/heads/";
-    //     if (ref.startsWith(BRANCH_REF_PREFIX)) {
-    //         branch = ref.substring(BRANCH_REF_PREFIX.length);
-    //     }
+        let branch;
+        const BRANCH_REF_PREFIX = "refs/heads/";
+        if (ref.startsWith(BRANCH_REF_PREFIX)) {
+            branch = ref.substring(BRANCH_REF_PREFIX.length);
+        }
 
-    //     const search: URLSearchParams = new URLSearchParams({
-    //         query: `is:open sort:created-desc${branch ? ` branch:${branch}` : ""}`,
-    //     });
+        const search: URLSearchParams = new URLSearchParams({
+            query: `is:open sort:created-desc${branch ? ` branch:${branch}` : ""}`,
+        });
 
-    //     const codeScanningUrl = utils.getEnvVariableValue("GITHUB_SERVER_URL")
-    //         + `/${owner}/${repo}/security/code-scanning?${search.toString()}`;
+        const codeScanningUrl = utils.getEnvVar("GITHUB_SERVER_URL")
+            + `/${owner}/${repo}/security/code-scanning?${search.toString()}`;
 
-    //     ghCore.info(`👀 Review the Code Scanning results in the Security tab: ${codeScanningUrl}`);
-    // }
+        ghCore.info(`👀 Review the Code Scanning results in the Security tab: ${codeScanningUrl}`);
+    }
 }
 
 async function waitForUploadToFinish(ghToken: string, sarifId: string): Promise<void> {
@@ -112,8 +108,7 @@ async function waitForUploadToFinish(ghToken: string, sarifId: string): Promise<
 
         }
         catch (err) {
-            throw (err);
-            // throw utils.getBetterHttpError(err);
+            throw utils.prettifyHttpError(err);
         }
 
         if (tries > maxTries) {

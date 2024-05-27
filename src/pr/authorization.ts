@@ -16,14 +16,14 @@ export async function isPrScanApproved(pr: types.PrData): Promise<boolean> {
     // update labels
     const availableLabels = await labels.getLabels(pr.number);
     if (availableLabels.length !== 0) {
-        ghCore.info(`Pull request labels are: ${availableLabels.map((s) => `"${s}"`).join(", ")}`);
+        ghCore.debug(`Pull request labels are: ${availableLabels.map((s) => `"${s}"`).join(", ")}`);
     }
     else {
-        ghCore.info("No labels found");
+        ghCore.debug("No labels found");
     }
     
     const prAction = github.context.payload.action;
-    ghCore.info(`Action performed is "${prAction}"`);
+    ghCore.debug(`Action performed is "${prAction}"`);
 
     if (prAction === "edited" || prAction === "synchronize") {
         ghCore.info(`Code change detected`);
@@ -42,7 +42,7 @@ export async function isPrScanApproved(pr: types.PrData): Promise<boolean> {
         if (prAuthorHasWriteAccess) {
             return true;
         }
-        ghCore.info(`Adding "${RhdaLabels.RHDA_SCAN_PENDING}" label.`);
+        ghCore.debug(`Adding "${RhdaLabels.RHDA_SCAN_PENDING}" label.`);
         await labels.addLabelsToPr(pr.number, [ RhdaLabels.RHDA_SCAN_PENDING ]);
 
         return false;
@@ -100,7 +100,7 @@ async function canPrAuthorWrite(pr: types.PrData): Promise<boolean> {
         ghCore.info(`User has write access to the repository`);
         return true;
     }
-    ghCore.info(`User doesn't has write access to the repository`);
+    ghCore.info(`User doesn't have write access to the repository`);
 
     return false;
 }
