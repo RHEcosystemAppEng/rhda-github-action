@@ -1,0 +1,23 @@
+plugins {
+    id 'java'
+}
+
+group = 'org.acme.dbaas'
+version = '1.0.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    myVersion = '2.13.5.Final'
+    myName = 'quarkus-agroal'
+}
+
+dependencies { 
+    implementation "io.quarkus:quarkus-hibernate-orm-deployment:2.0.2.Final"
+    implementation 'log4j:log4j:1.2.17'
+}
+test {
+    useJUnitPlatform()
+}
