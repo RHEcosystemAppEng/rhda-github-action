@@ -1,54 +1,30 @@
 
-export interface RhdaData {
-    providers: Map<string, RhdaProvider>
-}
+const GO_MOD = 'go.mod';
+const POM_XML = 'pom.xml';
+const PACKAGE_JSON = 'package.json';
+const REQUIREMENTS_TXT = 'requirements.txt';
+const BUILD_GRADLE = 'build.gradle';
 
-export interface RhdaProvider {
-    sources: Map<string, RhdaSource>,
-}
+export const GRADLE = 'gradle';
+export const MAVEN = 'maven';
+const GOLANG = 'golang';
+const NPM = 'npm';
+const PYPI = 'pypi';
 
-export interface RhdaSource {
-    dependencies: RhdaDependency[],
-}
-
-export interface RhdaDependency {
-    ref: string,
-    issues: RhdaIssues[] | null,
-    transitive: RhdaDependency[] | null,
-    recommendation: string | null,
-}
-
-export interface RhdaIssues {
-    id: string,
-    title: string,
-    severity: string,
-    cves: string[],
-    cvss: RhdaCVSS,
-    remediation: RhdaRemediation,
-}
-
-export interface RhdaCVSS {
-    cvss: string,
-}
-
-export interface RhdaRemediation {
-    trustedContent: RhdaTrustedContent | null,
-    fixedIn: string[],
-}
-
-export interface RhdaTrustedContent {
-    ref: string,
-}
-
-
-
-//----------------------------------
+export const fileNameToEcosystemMappings: { [key: string]: string } = {
+    [BUILD_GRADLE]: GRADLE,
+    [POM_XML]: MAVEN,
+    [GO_MOD]: GOLANG,
+    [PACKAGE_JSON]: NPM,
+    [REQUIREMENTS_TXT]: PYPI
+};
 
 /**
  * Represents data specification related to a dependency.
  */
 export interface IDependencyData {
     ref: string;
+    depGroup: string;
     depName: string;
     depVersion: string;
     ecosystem: string;
