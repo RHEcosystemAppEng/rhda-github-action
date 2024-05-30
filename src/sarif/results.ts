@@ -3,25 +3,7 @@ import path from 'path';
 
 import * as types from './types.js';
 import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
-
-function resolveDependencyFromReference(ref: string): string {
-    return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
-}
-
-function resolveEcosystemFromReference(ref: string): string {
-    const match = ref.match(/pkg:(.*?)\//);
-
-    if (match && match[1]) {
-        return match[1];
-    }
-
-    return undefined
-};
-
-function resolveVersionFromReference(ref: string): string {
-    const resolvedRef = resolveDependencyFromReference(ref);
-    return resolvedRef.split('@')[1];
-}
+import { resolveDependencyFromReference, resolveVersionFromReference } from './convert.js';
 
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,

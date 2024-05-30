@@ -8,6 +8,83 @@ import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION } from '../constants.js';
 import { isDefined } from '../utils.js'
 import path from 'path';
 
+export function resolveDependencyFromReference(ref: string): string {
+    return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
+}
+
+export function resolveEcosystemFromReference(ref: string): string {
+    const match = ref.match(/pkg:(.*?)\//);
+
+    if (match && match[1]) {
+        return match[1];
+    }
+
+    return undefined
+};
+
+export function resolveVersionFromReference(ref: string): string {
+    const resolvedRef = resolveDependencyFromReference(ref);
+    return resolvedRef.split('@')[1];
+}
+
+function getManifestData(filepath: string, ecosystem: string): string {
+
+    const manifestData = fs.readFileSync(filepath, "utf-8");
+
+    const args: Map<string, string> = new Map<string, string>();
+
+    const replaceArgsInString = (str: string): string => {
+        args.forEach((value, key) => {
+            const regexWithBraces = new RegExp(`\\$\\{${key}\\}`, 'g');
+            const regexWithoutBraces = new RegExp(`\\$${key}\\b`, 'g');
+    
+            str = str.replace(regexWithBraces, value).replace(regexWithoutBraces, value);
+        });
+        return str;
+    }
+
+    if (ecosystem === types.GRADLE) {
+
+        const lines = manifestData.split(/\r\n|\n/);
+
+        let isSingleArgument: boolean = false;
+        let isArgumentBlock: boolean = false;
+        lines.forEach(line => {
+            const cleanLine = line.split('//')[0].replace(/\/\*[\s\S]*?\*\//g, '').trim(); // Remove comments
+
+            if (isSingleArgument) {
+                if (cleanLine.startsWith('{')) {
+                    isArgumentBlock = true;
+                }
+                isSingleArgument = false;
+            }
+
+            if (cleanLine.includes('ext')) {               
+                if (cleanLine.includes('{')) {
+                    isArgumentBlock = true;
+                } else {
+                    isSingleArgument = true;
+                }
+            }
+
+            if (isSingleArgument || isArgumentBlock) {
+                if (cleanLine.includes('}')) {
+                    isArgumentBlock = false;
+                }
+
+                const argDataMatch = cleanLine.match(/\b(\w+)\s*=\s*(['"])(.*?)\2/);
+                if (argDataMatch) {
+                    args.set(argDataMatch[1].trim(), argDataMatch[3].trim());
+                }
+            }          
+        });
+        
+        return replaceArgsInString(manifestData);
+    }
+
+    return manifestData;
+}
+
 function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject: any, VulnerabilitySeverity: string } {
     /*
     * creates results and rules and structures SARIF
@@ -19,8 +96,9 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
     const failedProviders: string[] = [];
     const sources: types.ISource[] = [];
     let vulSeverity: types.VulnerabilitySeverity = "none";
-        
-    const manifestData = fs.readFileSync(manifestFilePath, "utf-8");
+
+    let ecosystem = types.fileNameToEcosystemMappings[path.basename(manifestFilePath)];    
+    const manifestData = getManifestData(manifestFilePath, ecosystem);
     const lines = manifestData.split(/\r\n|\n/);
 
     const getRecommendation = (dependency: any): string => {
@@ -52,7 +130,6 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
             let dependencyGroup = null;
             let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
             let dependencyVersion = resolveVersionFromReference(d.ref);
-            let ecosystem = types.fileNameToEcosystemMappings[path.basename(manifestFilePath)];
             if (ecosystem === types.MAVEN || ecosystem === types.GRADLE) {
                 dependencyGroup = dependencyName.split('/')[0];
                 dependencyName = dependencyName.split('/')[1];
@@ -160,23 +237,4 @@ export async function generateSarif(rhdaReportJson: any, manifestFilePath: strin
     }
 
     return { sarifObject, VulnerabilitySeverity };
-}
-
-function resolveDependencyFromReference(ref: string): string {
-    return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
-}
-
-function resolveEcosystemFromReference(ref: string): string {
-    const match = ref.match(/pkg:(.*?)\//);
-
-    if (match && match[1]) {
-        return match[1];
-    }
-
-    return undefined
-};
-
-function resolveVersionFromReference(ref: string): string {
-    const resolvedRef = resolveDependencyFromReference(ref);
-    return resolvedRef.split('@')[1];
 }
