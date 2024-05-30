@@ -3,25 +3,7 @@ import path from 'path';
 
 import * as types from './types.js';
 import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
-
-function resolveDependencyFromReference(ref: string): string {
-    return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
-}
-
-function resolveEcosystemFromReference(ref: string): string {
-    const match = ref.match(/pkg:(.*?)\//);
-
-    if (match && match[1]) {
-        return match[1];
-    }
-
-    return undefined
-};
-
-function resolveVersionFromReference(ref: string): string {
-    const resolvedRef = resolveDependencyFromReference(ref);
-    return resolvedRef.split('@')[1];
-}
+import { resolveDependencyFromReference, resolveVersionFromReference } from './convert.js';
 
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,
@@ -36,9 +18,16 @@ export function rhdaToResult(
         } else if (rhdaDependency.ecosystem === types.GRADLE) {
             const regexGroup = new RegExp(`group:\\s*(['"])${rhdaDependency.depGroup}\\1`);
             const regexName = new RegExp(`name:\\s*(['"])${rhdaDependency.depName}\\1`);
-            const regexColon = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}`);
+            const regexVersion = new RegExp(`version:\\s*(['"])${rhdaDependency.depVersion}\\1`);
+            
+            const regexColonWOVersion = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}`);
+            const regexColonWithVersion = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}:${rhdaDependency.depVersion}`);
 
-            return (regexName.test(line) && regexGroup.test(line)) || regexColon.test(line);
+            return rhdaDependency.depVersion
+                ? 
+                    (regexName.test(line) && regexGroup.test(line)) || regexColonWOVersion.test(line) 
+                :
+                    (regexName.test(line) && regexGroup.test(line) && regexVersion.test(line)) || regexColonWithVersion.test(line);
         } else {
             return line.includes(rhdaDependency.depName);
         }
