@@ -4,7 +4,7 @@ import * as fs from "fs";
 
 import * as result from './results.js';
 import * as types from './types.js';
-import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION } from '../constants.js';
+import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION, MAVEN, GRADLE, fileNameToEcosystemMappings } from '../constants.js';
 import { isDefined } from '../utils.js'
 import path from 'path';
 
@@ -43,7 +43,7 @@ function getManifestData(filepath: string, ecosystem: string): string {
         return str;
     }
 
-    if (ecosystem === types.GRADLE) {
+    if (ecosystem === GRADLE) {
 
         const lines = manifestData.split(/\r\n|\n/);
 
@@ -97,7 +97,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
     const sources: types.ISource[] = [];
     let vulSeverity: types.VulnerabilitySeverity = "none";
 
-    let ecosystem = types.fileNameToEcosystemMappings[path.basename(manifestFilePath)];    
+    let ecosystem = fileNameToEcosystemMappings[path.basename(manifestFilePath)];    
     const manifestData = getManifestData(manifestFilePath, ecosystem);
     const lines = manifestData.split(/\r\n|\n/);
 
@@ -130,7 +130,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
             let dependencyGroup = null;
             let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
             let dependencyVersion = resolveVersionFromReference(d.ref);
-            if (ecosystem === types.MAVEN || ecosystem === types.GRADLE) {
+            if (ecosystem === MAVEN || ecosystem === GRADLE) {
                 dependencyGroup = dependencyName.split('/')[0];
                 dependencyName = dependencyName.split('/')[1];
             }

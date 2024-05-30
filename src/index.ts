@@ -48,9 +48,9 @@ async function run(): Promise<void> {
 
   /* Generated RHDA report */
 
-  const manifestFilePath: string = await resolveManifestFilePath();
+  const {manifestFilePath, ecosystem} = await resolveManifestFilePath();
 
-  const rhdaReportJson: any = await generateRHDAReport(manifestFilePath);
+  const rhdaReportJson: any = await generateRHDAReport(manifestFilePath, ecosystem);
 
   /* Save RHDA report to file */
 

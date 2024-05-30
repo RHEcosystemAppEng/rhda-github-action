@@ -95,6 +95,34 @@ inputs:
     description: Specifies absolute path of pip executable, pip3 takes precedence over pip.
     required: false
     default: "pip"
+  syft_executable_path:
+    description: Specifies absolute path of syft executable.
+    required: false
+    default: "syft"
+  syft_config_path:
+    description: Specifies absolute path to the syft configuration file.
+    required: false
+    default: ""
+  skopeo_executable_path:
+    description: Specifies absolute path of skopeo executable.
+    required: false
+    default: "skopeo"
+  skopeo_config_path:
+    description: Specifies absolute path to the authentication file used by 'skopeo inspect'.
+    required: false
+    default: ""
+  docker_executable_path:
+    description: Specifies absolute path of docker executable.
+    required: false
+    default: "docker"
+  podman_executable_path:
+    description: Specifies absolute path of podman executable.
+    required: false
+    default: "podman"
+  image_platform:
+    description: Specifies platform used for multi-arch images.
+    required: false
+    default: ""
 
 outputs:
   rhda_report_json:

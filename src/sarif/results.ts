@@ -4,6 +4,7 @@ import path from 'path';
 import * as types from './types.js';
 import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
 import { resolveDependencyFromReference, resolveVersionFromReference } from './convert.js';
+import { MAVEN, GRADLE } from "../constants.js";
 
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,
@@ -13,9 +14,9 @@ export function rhdaToResult(
 ): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
 
     const startLine = lines.findIndex((line) => {
-        if (rhdaDependency.ecosystem === types.MAVEN) {
+        if (rhdaDependency.ecosystem === MAVEN) {
             return line.includes(`<artifactId>${rhdaDependency.depName}</artifactId>`);
-        } else if (rhdaDependency.ecosystem === types.GRADLE) {
+        } else if (rhdaDependency.ecosystem === GRADLE) {
             const regexGroup = new RegExp(`group:\\s*(['"])${rhdaDependency.depGroup}\\1`);
             const regexName = new RegExp(`name:\\s*(['"])${rhdaDependency.depName}\\1`);
             const regexVersion = new RegExp(`version:\\s*(['"])${rhdaDependency.depVersion}\\1`);
@@ -52,7 +53,7 @@ export function rhdaToResult(
                 issue.id,
                 textMessage,
                 manifestFilePath,
-                startLine +  (dependencyData.ecosystem === types.MAVEN ? 2 : 1),
+                startLine +  (dependencyData.ecosystem === MAVEN ? 2 : 1),
             )
 
             const rule = fetchIssueRules(issue, resolveDependencyFromReference(rhdaDependency.ref));
@@ -83,7 +84,7 @@ export function rhdaToResult(
             rhdaDependency.recommendationRef,
             textMessage,
             manifestFilePath,
-            startLine +  (rhdaDependency.ecosystem === types.MAVEN ? 2 : 1),
+            startLine +  (rhdaDependency.ecosystem === MAVEN ? 2 : 1),
         )
 
         const rule = fetchRecomendationRules(rhdaDependency.recommendationRef);
