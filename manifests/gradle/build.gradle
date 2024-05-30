@@ -10,12 +10,12 @@ repositories {
 }
 
 ext {
-    myVersion = '2.0.2.Final'
+    myVersion = '2.13.5.Final'
     myName = 'quarkus-agroal'
 }
 
 dependencies { 
-    implementation "io.quarkus:quarkus-hibernate-orm-deployment:${myVersion}"
+    implementation "io.quarkus:quarkus-hibernate-orm-deployment:2.0.2.Final"
     implementation group: "io.quarkus", name: "quarkus-hibernate-orm-deployment"
     implementation 'log4j:log4j:1.2.17'
     implementation group: "log4j", name: "log4j"
