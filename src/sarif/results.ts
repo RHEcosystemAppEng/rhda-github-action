@@ -18,9 +18,16 @@ export function rhdaToResult(
         } else if (rhdaDependency.ecosystem === types.GRADLE) {
             const regexGroup = new RegExp(`group:\\s*(['"])${rhdaDependency.depGroup}\\1`);
             const regexName = new RegExp(`name:\\s*(['"])${rhdaDependency.depName}\\1`);
-            const regexColon = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}`);
+            const regexVersion = new RegExp(`version:\\s*(['"])${rhdaDependency.depVersion}\\1`);
+            
+            const regexColonWOVersion = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}`);
+            const regexColonWithVersion = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}:${rhdaDependency.depVersion}`);
 
-            return (regexName.test(line) && regexGroup.test(line)) || regexColon.test(line);
+            return rhdaDependency.depVersion
+                ? 
+                    (regexName.test(line) && regexGroup.test(line)) || regexColonWOVersion.test(line) 
+                :
+                    (regexName.test(line) && regexGroup.test(line) && regexVersion.test(line)) || regexColonWithVersion.test(line);
         } else {
             return line.includes(rhdaDependency.depName);
         }

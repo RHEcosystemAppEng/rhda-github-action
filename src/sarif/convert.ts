@@ -24,7 +24,7 @@ export function resolveEcosystemFromReference(ref: string): string {
 
 export function resolveVersionFromReference(ref: string): string {
     const resolvedRef = resolveDependencyFromReference(ref);
-    return resolvedRef.split('@')[1];
+    return resolvedRef.split('@')[1] || '';
 }
 
 function getManifestData(filepath: string, ecosystem: string): string {
