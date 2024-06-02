@@ -29,3 +29,10 @@ export const fileNameToEcosystemMappings: { [key: string]: string } = {
     [DOCKERFILE]: DOCKER,
     [CONTAINERFILE]: DOCKER
 };
+
+export type VulnerabilitySeverity = "none" | "warning" | "error";
+export const vulnerabilitySeverityOrder: Record<VulnerabilitySeverity, number> = {
+    none: 0,
+    warning: 1,
+    error: 2
+};

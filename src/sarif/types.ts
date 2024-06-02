@@ -51,5 +51,3 @@ export interface IRemediation {
 export interface ITrustedContent {
     ref: string;
 }
-
-export type VulnerabilitySeverity = "none" | "warning" | "error";

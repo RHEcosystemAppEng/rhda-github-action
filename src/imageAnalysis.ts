@@ -4,8 +4,8 @@ import * as fs from 'fs';
 import * as ghCore from '@actions/core';
 
 import { Inputs, Outputs } from './generated/inputs-outputs.js';
-import { imageAnalysisService } from './exhortServices';
-import { UTM_SOURCE } from './constants';
+import { imageAnalysisService } from './exhortServices.js';
+import { UTM_SOURCE } from './constants.js';
 
 /**
  * Represents options for image analysis.
@@ -183,10 +183,10 @@ class DockerImageAnalysis implements IImageAnalysis {
  * @param filePath - The path to the image file to analyze.
  * @returns A Promise resolving to an Analysis Report HTML.
  */
-async function executeDockerImageAnalysis(filePath: string): Promise<string> {
+async function executeDockerImageAnalysis(filePath: string): Promise<any> {
     const dockerImageAnalysis = new DockerImageAnalysis(filePath);
     await dockerImageAnalysis.runImageAnalysis();
-    return dockerImageAnalysis.imageAnalysisReportJson;
+    return JSON.parse(dockerImageAnalysis.imageAnalysisReportJson);
 }
 
 export { executeDockerImageAnalysis, IImageRef, IOptions };

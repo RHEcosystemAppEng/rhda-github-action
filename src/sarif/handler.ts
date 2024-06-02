@@ -7,15 +7,17 @@ import * as convert from './convert.js';
 import * as upload from './upload.js';
 import * as utils from '../utils.js';
 import { PrData } from '../pr/types.js';
+import * as constants from '../constants.js';
 
-export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, sha: string, ref: string, analysisStartTime: string, prData: PrData): Promise<{rhdaReportSarifFilePath: string, VulnerabilitySeverity: string}> {
-    
-    const { sarifObject: rhdaReportSarif, VulnerabilitySeverity } = await convert.generateSarif(rhdaReportJson, manifestFilePath);
+export async function handleSarif(rhdaReportJson: any, manifestFilePath: string, ecosystem: string, sha: string, ref: string, analysisStartTime: string, prData: PrData): Promise<{rhdaReportSarifFilePath: string, vulSeverity: constants.VulnerabilitySeverity}> {
+    ghCore.info(`⏳ Converting RHDA report JSON to SARIF...`);
 
+    const { sarifObject: rhdaReportSarif, vulSeverity: vulSeverity } = await convert.generateSarif(rhdaReportJson, manifestFilePath, ecosystem);
+    console.log(`rhdaReportSarif: ${JSON.stringify(rhdaReportSarif, null, 4)}`)
     const rhdaReportSarifFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`);
     await utils.writeToFile(JSON.stringify(rhdaReportSarif,null,4), rhdaReportSarifFilePath);
     
-    ghCore.info(`ℹ️ Successfully converted RHDA report JSON to SARIF`);
+    ghCore.info(`✅ Successfully converted RHDA report JSON to SARIF`);
 
     ghCore.info(`✍️ Setting output "${Outputs.RHDA_REPORT_SARIF}" to ${rhdaReportSarifFilePath}`);
     ghCore.setOutput(Outputs.RHDA_REPORT_SARIF, utils.escapeWindowsPathForActionsOutput(rhdaReportSarifFilePath));
@@ -36,5 +38,5 @@ export async function handleSarif(rhdaReportJson: any, manifestFilePath: string,
         ghCore.info(`⏩ Input "${Inputs.UPLOAD_SARIF}" is false, skipping SARIF upload.`);
     }
 
-    return { rhdaReportSarifFilePath, VulnerabilitySeverity };
+    return { rhdaReportSarifFilePath, vulSeverity };
 }

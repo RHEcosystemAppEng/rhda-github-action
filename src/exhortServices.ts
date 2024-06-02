@@ -1,7 +1,8 @@
 import exhort from '@rhecosystemappeng/exhort-javascript-api';
 import { execSync } from 'child_process';
 
-import { IImageRef, IOptions } from './imageAnalysis';
+import { IImageRef, IOptions } from './imageAnalysis.js';
+import path from 'path';
 
 /**
  * Executes RHDA image analysis using the provided images and options.
@@ -11,7 +12,8 @@ import { IImageRef, IOptions } from './imageAnalysis';
  */
 function imageAnalysisService(images: IImageRef[], options: IOptions): Promise<any> {
   return new Promise<any>(async (resolve, reject) => {
-    const jarPath = `${__dirname}/../javaApiAdapter/exhort-java-api-adapter-1.0-SNAPSHOT-jar-with-dependencies.jar`;
+    const __dirname = path.resolve();
+    const jarPath = `${__dirname}/javaApiAdapter/exhort-java-api-adapter-1.0-SNAPSHOT-jar-with-dependencies.jar`;
     const reportType = 'json';
     let parameters = '';
     let properties = '';

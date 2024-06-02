@@ -4,9 +4,11 @@ import * as fs from "fs";
 
 import * as result from './results.js';
 import * as types from './types.js';
-import { SARIF_SCHEMA_URL, SARIF_SCHEMA_VERSION, MAVEN, GRADLE, fileNameToEcosystemMappings } from '../constants.js';
+import * as constants from '../constants.js';
 import { isDefined } from '../utils.js'
-import path from 'path';
+
+const FROM_REGEX: RegExp = /^\s*FROM\s+(.*)/;
+const ARG_REGEX: RegExp = /^\s*ARG\s+(.*)/;
 
 export function resolveDependencyFromReference(ref: string): string {
     return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
@@ -27,9 +29,11 @@ export function resolveVersionFromReference(ref: string): string {
     return resolvedRef.split('@')[1] || '';
 }
 
-function getManifestData(filepath: string, ecosystem: string): string {
+function getManifestDataLines(filepath: string, ecosystem: string): string[] {
 
     const manifestData = fs.readFileSync(filepath, "utf-8");
+
+    const lines = manifestData.split(/\r\n|\n/);
 
     const args: Map<string, string> = new Map<string, string>();
 
@@ -42,10 +46,8 @@ function getManifestData(filepath: string, ecosystem: string): string {
         });
         return str;
     }
-
-    if (ecosystem === GRADLE) {
-
-        const lines = manifestData.split(/\r\n|\n/);
+    
+    if (ecosystem === constants.GRADLE) {
 
         let isSingleArgument: boolean = false;
         let isArgumentBlock: boolean = false;
@@ -79,13 +81,25 @@ function getManifestData(filepath: string, ecosystem: string): string {
             }          
         });
         
-        return replaceArgsInString(manifestData);
+        return replaceArgsInString(manifestData).split(/\r\n|\n/);
     }
 
-    return manifestData;
+    if (ecosystem === constants.DOCKER) {
+        lines.forEach(line => {
+            const argMatch = line.match(ARG_REGEX);
+            if (argMatch) {
+                const argData = argMatch[1].trim().split('=');
+                args.set(argData[0], argData[1]);
+            }
+        });
+
+        return replaceArgsInString(manifestData).split(/\r\n|\n/);
+    }
+
+    return lines;
 }
 
-function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject: any, VulnerabilitySeverity: string } {
+function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: string, vulSeverity: constants.VulnerabilitySeverity, globalRef?: string): { finalResults: sarif.Result[], finalRules: sarif.ReportingDescriptor[], vulSeverity: constants.VulnerabilitySeverity } {
     /*
     * creates results and rules and structures SARIF
     */
@@ -95,11 +109,6 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
     const dependencies: Map<string, types.IDependencyData[]> = new Map<string, types.IDependencyData[]>()
     const failedProviders: string[] = [];
     const sources: types.ISource[] = [];
-    let vulSeverity: types.VulnerabilitySeverity = "none";
-
-    let ecosystem = fileNameToEcosystemMappings[path.basename(manifestFilePath)];    
-    const manifestData = getManifestData(manifestFilePath, ecosystem);
-    const lines = manifestData.split(/\r\n|\n/);
 
     const getRecommendation = (dependency: any): string => {
         return isDefined(dependency, 'recommendation') ? resolveVersionFromReference(dependency.recommendation) : '';
@@ -127,16 +136,24 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
             const issues: types.IIssue[] = isDefined(d, 'issues') ? d.issues : null;
             const transitives: types.IDependencyData[] = isDefined(d, 'transitive') ? d.transitive.map(t => getDependencyData(t, source)) : null;
 
-            let dependencyGroup = null;
-            let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
-            let dependencyVersion = resolveVersionFromReference(d.ref);
-            if (ecosystem === MAVEN || ecosystem === GRADLE) {
+            let dependencyGroup: string;
+            let dependencyName: string;
+            let dependencyVersion: string;
+
+            if ( ecosystem === constants.DOCKER ) {
+                dependencyName = globalRef;
+            } else {
+                dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
+                dependencyVersion = resolveVersionFromReference(d.ref);
+            }
+            
+            if (ecosystem === constants.MAVEN || ecosystem === constants.GRADLE) {
                 dependencyGroup = dependencyName.split('/')[0];
                 dependencyName = dependencyName.split('/')[1];
             }
 
             return {
-                ref: d.ref,
+                ref: globalRef || d.ref,
                 depGroup: dependencyGroup,
                 depName: dependencyName,
                 depVersion: dependencyVersion,
@@ -150,6 +167,51 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
         }
         return null;
     }
+
+    const getStartLine = (dd: types.IDependencyData): number => {
+        if (ecosystem === constants.MAVEN) {
+            return 2 + 
+                lines.findIndex((line) => {
+                    return line.includes(`<artifactId>${dd.depName}</artifactId>`);
+                });
+        };
+
+        if (ecosystem === constants.GRADLE) {
+            const regexGroup = new RegExp(`group:\\s*(['"])${dd.depGroup}\\1`);
+            const regexName = new RegExp(`name:\\s*(['"])${dd.depName}\\1`);
+
+            if (dd.depVersion) {
+                const regexVersion = new RegExp(`version:\\s*(['"])${dd.depVersion}\\1`);
+                
+                const regexColonWithVersion = new RegExp(`${dd.depGroup}:${dd.depName}:${dd.depVersion}`);
+                return 1 + 
+                    lines.findIndex((line) => {       
+                        return (regexName.test(line) && regexGroup.test(line) && regexVersion.test(line)) || regexColonWithVersion.test(line);
+                    });
+            }
+            
+            const regexColonWOVersion = new RegExp(`${dd.depGroup}:${dd.depName}`);
+            return 1 + 
+                lines.findIndex((line) => {       
+                    return (regexName.test(line) && regexGroup.test(line)) || regexColonWOVersion.test(line) 
+                });
+        };
+
+        if (ecosystem === constants.DOCKER) {
+            return 1 + 
+                lines.findIndex((line) => {
+                    const match = line.match(FROM_REGEX);
+                    return match && (match[1].includes(dd.depName) || match[1].includes(dd.depName.replace(':latest', '')));
+                });
+        };
+
+        return 1 + 
+            lines.findIndex((line) => {
+                return line.includes(dd.depName);
+            });
+    }
+
+    const lines = getManifestDataLines(manifestFilePath, ecosystem);
 
     if (isDefined(rhdaData, 'providers')) {
         Object.entries(rhdaData.providers).map(([providerName, providerData]: [string, any]) => {
@@ -175,8 +237,9 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
             source.dependencies.forEach(d => {
                 const dd = getDependencyData(d, source);
                 if (dd) {
-                    dependencies[dd.ref] = dependencies[dd.ref] || [];
-                    dependencies[dd.ref].push(dd);
+                    const refKey = globalRef || dd.ref;
+                    dependencies[refKey] = dependencies[refKey] || [];
+                    dependencies[refKey].push(dd);
                 }
             });
         });
@@ -190,51 +253,74 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string): { sarifObject
                 return dd.transitives && dd.transitives.length > 0 && dd.transitives.some(td => td.issues && td.issues.length > 0);
             }
         });
-        dependencyData.forEach((dd: types.IDependencyData) => {
-            const res = result.rhdaToResult(dd, manifestFilePath, lines, refHasIssues);
-                    finalResults.push(...res[0]);
-                    finalRules.push(...res[1]);
-        })
         
-
+        dependencyData.forEach((dd: types.IDependencyData) => {
+            const startLine = getStartLine(dd);
+            const res = result.rhdaToResult(dd, manifestFilePath, startLine, refHasIssues);
+            finalResults.push(...res[0]);
+            finalRules.push(...res[1]);
+        })
     });
 
-    ghCore.debug(`Number of results: ${finalResults.length}`);
-
-    ghCore.debug(`Number of rules: ${finalRules.length}`);
-
-    ghCore.debug(`Sarif schema version is ${SARIF_SCHEMA_VERSION}`);
-
     return {
-        sarifObject: {
-            $schema: SARIF_SCHEMA_URL,
-            version: SARIF_SCHEMA_VERSION,
-            runs: [
-                {
-                    tool: {
-                        driver: {
-                            name: "Red Hat Dependency Analytics",
-                            rules: finalRules,
-                        },
-                    },
-                    results: finalResults,
-                },
-            ],
-        },
-        VulnerabilitySeverity: vulSeverity,
+        finalResults: finalResults,
+        finalRules: finalRules,
+        vulSeverity: vulSeverity,
     };
 }
 
-export async function generateSarif(rhdaReportJson: any, manifestFilePath: string): Promise<{ sarifObject: any, VulnerabilitySeverity: string }> {
+function createSarifObject(finalResults: sarif.Result[], finalRules: sarif.ReportingDescriptor[]): any {
+    return {
+        $schema: constants.SARIF_SCHEMA_URL,
+        version: constants.SARIF_SCHEMA_VERSION,
+        runs: [
+            {
+                tool: {
+                    driver: {
+                        name: "Red Hat Dependency Analytics",
+                        rules: finalRules,
+                    },
+                },
+                results: finalResults,
+            },
+        ],
+    }
+}
+
+export async function generateSarif(rhdaReportJson: any, manifestFilePath: string, ecosystem: string): Promise<{ sarifObject: any, vulSeverity: constants.VulnerabilitySeverity }> {
     /*
     * creates a SARIF and writes it to file
     */
 
-    const { sarifObject, VulnerabilitySeverity } = rhdaJsonToSarif(rhdaReportJson, manifestFilePath);
+    let vulSeverity: constants.VulnerabilitySeverity = "none";
+    let finalResults: sarif.Result[] = [];
+    let finalRules: sarif.ReportingDescriptor[] = [];
+    
+    const updateVulnerabilitySeverity = (returnedVulSeverity: constants.VulnerabilitySeverity): void => {
+        if (constants.vulnerabilitySeverityOrder[returnedVulSeverity] > constants.vulnerabilitySeverityOrder[vulSeverity]) {
+            vulSeverity = returnedVulSeverity;
+        }
+    }
+
+    if (ecosystem === constants.DOCKER) {
+        Object.entries(rhdaReportJson).map(([imageRef, imageData]: [string, any]) => {
+            const { finalResults: results, finalRules: rules, vulSeverity: returnedVulSeverity } = rhdaJsonToSarif(imageData, manifestFilePath, ecosystem, vulSeverity, imageRef);
+            updateVulnerabilitySeverity(returnedVulSeverity);
+            finalResults.push(...results);
+            finalRules.push(...rules);
+        });
+    } else {
+        const { finalResults: results, finalRules: rules, vulSeverity: returnedVulSeverity } = rhdaJsonToSarif(rhdaReportJson, manifestFilePath, ecosystem, vulSeverity);
+        updateVulnerabilitySeverity(returnedVulSeverity);
+        finalResults.push(...results);
+        finalRules.push(...rules);
+    }
+
+    const sarifObject = createSarifObject(finalResults, finalRules);
 
     if (!sarifObject.$schema) {
         throw new Error(`No $schema key for SARIF file, cannot proceed.`);
     }
 
-    return { sarifObject, VulnerabilitySeverity };
+    return { sarifObject, vulSeverity };
 }

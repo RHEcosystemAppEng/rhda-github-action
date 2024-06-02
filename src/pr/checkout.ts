@@ -1,8 +1,6 @@
 import * as ghCore from '@actions/core';
-import stripAnsi from "strip-ansi";
 
 import { getGitExecutable, execCommand } from "../utils.js";
-import path from 'path';
 
 export async function getOriginalCheckoutBranch(): Promise<string> {
     const branch = (await execCommand(getGitExecutable(), [ "branch", "--show-current" ])).stdout;
