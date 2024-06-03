@@ -1,5 +1,5 @@
 # Stage 1: MongoDB
-FROM mongo:7.0.10-rc0-jammy AS mongo_stage
+# FROM mongo:7.0.10-rc0-jammy AS mongo_stage
 
 # # Stage 2: Nginx
 # FROM nginx:stable-perl AS nginx_stage
@@ -21,13 +21,13 @@ FROM mongo:7.0.10-rc0-jammy AS mongo_stage
 
 # ARG ARG_IMAGE=alpine
 # ARG ARG_TAG=3.9.5
-# ARG ARG_NODE_TAG=14
+ARG ARG_NODE_TAG=14
 # FROM scratch
 # FROM ubuntu
 # FROM ubuntu:latest
 # FROM ubuntu:latest as builder2
 # FROM node:14 AS app
-# FROM node:$ARG_NODE_TAG
+FROM node:$ARG_NODE_TAG
 # FROM --platform=linux/amd64 alpine:latest
 # FROM --platform=linux/amd64 python:${ARG_TAG}-${ARG_IMAGE} as Hello_there
 # FROM mariadb:latest as db
