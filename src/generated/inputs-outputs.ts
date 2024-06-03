@@ -8,6 +8,12 @@ export enum Inputs {
      */
     ARTIFACT_FILENAME = "artifact_filename",
     /**
+     * Specifies absolute path of docker executable.
+     * Required: false
+     * Default: "docker"
+     */
+    DOCKER_EXECUTABLE_PATH = "docker_executable_path",
+    /**
      * Installs Python packages tailored to the Python version in use, disregarding declared versions. Note: Requires settings Match Manifest Versions to be set to false and Use Python Virtual Environment to be set to true.
      * Required: false
      * Default: "false"
@@ -40,6 +46,12 @@ export enum Inputs {
      * Default: "gradle"
      */
     GRADLE_EXECUTABLE_PATH = "gradle_executable_path",
+    /**
+     * Specifies platform used for multi-arch images.
+     * Required: false
+     * Default: ""
+     */
+    IMAGE_PLATFORM = "image_platform",
     /**
      * Path to target manifest file for analysis.
      * Required: false
@@ -77,6 +89,12 @@ export enum Inputs {
      */
     PIP_EXECUTABLE_PATH = "pip_executable_path",
     /**
+     * Specifies absolute path of podman executable.
+     * Required: false
+     * Default: "podman"
+     */
+    PODMAN_EXECUTABLE_PATH = "podman_executable_path",
+    /**
      * Specifies absolute path of python3 executable, python3 takes precedence over python.
      * Required: false
      * Default: "python3"
@@ -94,6 +112,30 @@ export enum Inputs {
      * Default: "redhat-dependency-analytics-report"
      */
     RHDA_REPORT_NAME = "rhda_report_name",
+    /**
+     * Specifies absolute path to the authentication file used by 'skopeo inspect'.
+     * Required: false
+     * Default: ""
+     */
+    SKOPEO_CONFIG_PATH = "skopeo_config_path",
+    /**
+     * Specifies absolute path of skopeo executable.
+     * Required: false
+     * Default: "skopeo"
+     */
+    SKOPEO_EXECUTABLE_PATH = "skopeo_executable_path",
+    /**
+     * Specifies absolute path to the syft configuration file.
+     * Required: false
+     * Default: ""
+     */
+    SYFT_CONFIG_PATH = "syft_config_path",
+    /**
+     * Specifies absolute path of syft executable.
+     * Required: false
+     * Default: "syft"
+     */
+    SYFT_EXECUTABLE_PATH = "syft_executable_path",
     /**
      * Upload the generated RHDA report JSON file and SARIF file as an artifact.
      * Required: false

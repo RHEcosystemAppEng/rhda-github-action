@@ -11,7 +11,7 @@ import { isPr, handlePr } from './pr/handler.js';
 import { getOriginalCheckoutBranch, checkoutCleanup } from './pr/checkout.js'
 import { PrData } from './pr/types.js'
 import { RhdaLabels, addLabelsToPr } from './pr/labels.js'
-
+import * as constants from './constants.js';
 
 let prData: PrData | undefined;
 let originalCheckoutBranch: string;
@@ -48,9 +48,9 @@ async function run(): Promise<void> {
 
   /* Generated RHDA report */
 
-  const manifestFilePath: string = await resolveManifestFilePath();
+  const {manifestFilePath, ecosystem} = await resolveManifestFilePath();
 
-  const rhdaReportJson: any = await generateRHDAReport(manifestFilePath);
+  const rhdaReportJson: any = await generateRHDAReport(manifestFilePath, ecosystem);
 
   /* Save RHDA report to file */
 
@@ -62,7 +62,7 @@ async function run(): Promise<void> {
 
   /* Convert to SARIF and upload SARIF */
 
-  const {rhdaReportSarifFilePath, VulnerabilitySeverity: vulSeverity} = await handleSarif(rhdaReportJson, manifestFilePath, sha, ref, analysisStartTime, prData);
+  const {rhdaReportSarifFilePath, vulSeverity: vulSeverity} = await handleSarif(rhdaReportJson, manifestFilePath, ecosystem, sha, ref, analysisStartTime, prData);
 
   /* Handle artifacts */
 
@@ -92,7 +92,7 @@ async function run(): Promise<void> {
 
   const failOn = ghCore.getInput(Inputs.FAIL_ON) || "error";
 
-  if (vulSeverity !== "none") {
+  if (constants.vulnerabilitySeverityOrder[vulSeverity] > 0) {
       if (failOn !== "never") {
           if (failOn === "warning") {
               ghCore.info(
@@ -100,7 +100,7 @@ async function run(): Promise<void> {
               );
               ghCore.setFailed(`Found vulnerabilities in the project.`);
           }
-          else if (failOn === "error" && vulSeverity === "error") {
+          else if (failOn === "error" && constants.vulnerabilitySeverityOrder[vulSeverity] === 2) {
               ghCore.info(
                   `Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one error was found. Failing workflow.`
               );

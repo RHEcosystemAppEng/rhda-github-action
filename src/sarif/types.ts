@@ -1,29 +1,9 @@
-
-const GO_MOD = 'go.mod';
-const POM_XML = 'pom.xml';
-const PACKAGE_JSON = 'package.json';
-const REQUIREMENTS_TXT = 'requirements.txt';
-const BUILD_GRADLE = 'build.gradle';
-
-export const GRADLE = 'gradle';
-export const MAVEN = 'maven';
-const GOLANG = 'golang';
-const NPM = 'npm';
-const PYPI = 'pypi';
-
-export const fileNameToEcosystemMappings: { [key: string]: string } = {
-    [BUILD_GRADLE]: GRADLE,
-    [POM_XML]: MAVEN,
-    [GO_MOD]: GOLANG,
-    [PACKAGE_JSON]: NPM,
-    [REQUIREMENTS_TXT]: PYPI
-};
-
 /**
  * Represents data specification related to a dependency.
  */
 export interface IDependencyData {
-    ref: string;
+    imageRef: string;
+    depRef: string;
     depGroup: string;
     depName: string;
     depVersion: string;
@@ -72,5 +52,3 @@ export interface IRemediation {
 export interface ITrustedContent {
     ref: string;
 }
-
-export type VulnerabilitySeverity = "none" | "warning" | "error";

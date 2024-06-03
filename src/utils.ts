@@ -2,6 +2,7 @@ import * as fs from 'fs';
 import * as zlib from "zlib";
 import * as ghCore from "@actions/core";
 import * as ghExec from "@actions/exec";
+
 import { Inputs } from "./generated/inputs-outputs.js";
 
 type OS = "linux" | "macos" | "windows";

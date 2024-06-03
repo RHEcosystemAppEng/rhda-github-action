@@ -4,45 +4,25 @@ import path from 'path';
 import * as types from './types.js';
 import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
 import { resolveDependencyFromReference, resolveVersionFromReference } from './convert.js';
+import { MAVEN } from "../constants.js";
 
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,
     manifestFilePath: string,
-    lines: string[],
+    startLine: number,
     refHasIssues: boolean,
 ): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
-
-    const startLine = lines.findIndex((line) => {
-        if (rhdaDependency.ecosystem === types.MAVEN) {
-            return line.includes(`<artifactId>${rhdaDependency.depName}</artifactId>`);
-        } else if (rhdaDependency.ecosystem === types.GRADLE) {
-            const regexGroup = new RegExp(`group:\\s*(['"])${rhdaDependency.depGroup}\\1`);
-            const regexName = new RegExp(`name:\\s*(['"])${rhdaDependency.depName}\\1`);
-            const regexVersion = new RegExp(`version:\\s*(['"])${rhdaDependency.depVersion}\\1`);
-            
-            const regexColonWOVersion = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}`);
-            const regexColonWithVersion = new RegExp(`${rhdaDependency.depGroup}:${rhdaDependency.depName}:${rhdaDependency.depVersion}`);
-
-            return rhdaDependency.depVersion
-                ? 
-                    (regexName.test(line) && regexGroup.test(line)) || regexColonWOVersion.test(line) 
-                :
-                    (regexName.test(line) && regexGroup.test(line) && regexVersion.test(line)) || regexColonWithVersion.test(line);
-        } else {
-            return line.includes(rhdaDependency.depName);
-        }
-    });
 
     const results: sarif.Result[] = [];
     const rules: sarif.ReportingDescriptor[] = [];
 
-    const generateIssueResults = (issues: types.IIssue[], dependencyData: types.IDependencyData,isDirect: boolean) => {
+    const generateIssueResults = (issues: types.IIssue[], dependencyData: types.IDependencyData, isDirect: boolean) => {
         issues.forEach((issue) => {
             let textMessage = `This line introduces a "${issue.title}" vulnerability with `
                 + `${issue.severity} severity.\n`
                 + `Vulnerability data provider is ${dependencyData.providerId}.\n`
                 + `Vulnerability data source is ${dependencyData.sourceId}.\n`
-                + `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depGroup ? `${dependencyData.depGroup}/` : ''}${dependencyData.depName} version ${dependencyData.depVersion}.`;
+                + `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depGroup ? `${dependencyData.depGroup}/` : ''}${dependencyData.depName}${dependencyData.depVersion ? ` version ${dependencyData.depVersion}` : ''}.`;
 
             if (issue.remediation.trustedContent) {
                 textMessage = `${textMessage}\nRecommended remediation version: ${resolveVersionFromReference(issue.remediation.trustedContent.ref)}`;
@@ -52,10 +32,11 @@ export function rhdaToResult(
                 issue.id,
                 textMessage,
                 manifestFilePath,
-                startLine +  (dependencyData.ecosystem === types.MAVEN ? 2 : 1),
+                startLine,
             )
 
-            const rule = fetchIssueRules(issue, resolveDependencyFromReference(rhdaDependency.ref));
+            const directRef = rhdaDependency.imageRef ? rhdaDependency.imageRef : resolveDependencyFromReference(rhdaDependency.depRef);
+            const rule = fetchIssueRules(issue, directRef);
 
             rules.push(rule);
             results.push(result);
@@ -83,7 +64,7 @@ export function rhdaToResult(
             rhdaDependency.recommendationRef,
             textMessage,
             manifestFilePath,
-            startLine +  (rhdaDependency.ecosystem === types.MAVEN ? 2 : 1),
+            startLine,
         )
 
         const rule = fetchRecomendationRules(rhdaDependency.recommendationRef);

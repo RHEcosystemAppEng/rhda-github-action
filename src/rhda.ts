@@ -2,13 +2,14 @@ import * as ghCore from '@actions/core';
 
 import { stackAnalysisService } from './exhortServices.js';
 import { Inputs } from './generated/inputs-outputs.js';
-import * as constants from './constants.js';
+import { UTM_SOURCE, DOCKER } from './constants.js';
+import { executeDockerImageAnalysis } from './imageAnalysis.js';
 
-function getRHDAConfig() {
+function getDependencyAnalysisConfig() {
     // set up configuration options for the stack analysis request
     const options = {
       // 'RHDA_TOKEN': globalConfig.telemetryId,
-      'RHDA_SOURCE': constants.UTM_SOURCE,
+      'RHDA_SOURCE': UTM_SOURCE,
       'MATCH_MANIFEST_VERSIONS': ghCore.getInput(Inputs.MATCH_MANIFEST_VERSION),
       'EXHORT_PYTHON_VIRTUAL_ENV': ghCore.getInput(Inputs.USE_PYTHON_VIRTUAL_ENVIRONMENT),
       'EXHORT_PYTHON_INSTALL_BEST_EFFORTS': ghCore.getInput(Inputs.ENABLE_PYTHON_BEST_EFFORTS_INSTALLATION),
@@ -27,9 +28,15 @@ function getRHDAConfig() {
   return options;
 }
 
-export async function generateRHDAReport(manifestFilePath: string) {
+export async function generateRHDAReport(manifestFilePath: string, ecosystem: string) {
   ghCore.info(`⏳ Analysing dependencies...`);
-  const rhdaReportJson = await stackAnalysisService(manifestFilePath, getRHDAConfig())
+
+  let rhdaReportJson: string | any;
+  if (ecosystem === DOCKER) {
+    rhdaReportJson = await executeDockerImageAnalysis(manifestFilePath)
+  } else {
+    rhdaReportJson = await stackAnalysisService(manifestFilePath, getDependencyAnalysisConfig())
+  }
   
   ghCore.info(`✅ Successfully generated Red Had Dependency Analytics report`);
   return JSON.parse(JSON.stringify(rhdaReportJson));
