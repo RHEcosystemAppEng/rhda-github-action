@@ -1,9 +1,11 @@
 import * as ghCore from '@actions/core';
+import path from 'path';
 
 import { stackAnalysisService } from './exhortServices.js';
-import { Inputs } from './generated/inputs-outputs.js';
+import { Inputs, Outputs } from './generated/inputs-outputs.js';
 import { UTM_SOURCE, DOCKER } from './constants.js';
 import { executeDockerImageAnalysis } from './imageAnalysis.js';
+import * as utils from './utils.js';
 
 function getDependencyAnalysisConfig() {
     // set up configuration options for the stack analysis request
@@ -28,7 +30,7 @@ function getDependencyAnalysisConfig() {
   return options;
 }
 
-export async function generateRHDAReport(manifestFilePath: string, ecosystem: string) {
+export async function generateRHDAReport(manifestFilePath: string, ecosystem: string): Promise<{rhdaReportJson: any, rhdaReportJsonFilePath: string}> {
   ghCore.info(`⏳ Analysing dependencies...`);
 
   let rhdaReportJson: string | any;
@@ -37,8 +39,15 @@ export async function generateRHDAReport(manifestFilePath: string, ecosystem: st
   } else {
     rhdaReportJson = await stackAnalysisService(manifestFilePath, getDependencyAnalysisConfig())
   }
+
+  /* Save RHDA report to file */
+  const rhdaReportJsonFilePath: string = `${process.cwd()}/${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`;
+  await utils.writeToFile(JSON.stringify(rhdaReportJson,null,4), rhdaReportJsonFilePath);
+  
+  ghCore.info(`✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`);
+  ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
   
   ghCore.info(`✅ Successfully generated Red Had Dependency Analytics report`);
-  return JSON.parse(JSON.stringify(rhdaReportJson));
+  return {rhdaReportJson: JSON.parse(JSON.stringify(rhdaReportJson)), rhdaReportJsonFilePath: rhdaReportJsonFilePath};
 }
   

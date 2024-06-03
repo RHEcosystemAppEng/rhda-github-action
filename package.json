@@ -21,16 +21,18 @@
     "npm": ">= 10.0.0"
   },
   "type": "module",
-  "main": "dist/src/index.js",
-  "module": "dist/src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.js",
   "author": "",
   "license": "ISC",
   "scripts": {
     "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts",
-    "compile": "tsc -p ./"
+    "compile": "tsc -p ./",
+    "build": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
   },
   "devDependencies": {
     "@types/node": "^20.11.24",
+    "@vercel/ncc": "^0.38.1",
     "ts-node": "^10.9.2",
     "typescript": "^5.3.3"
   },

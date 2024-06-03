@@ -11,8 +11,6 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
-        with:
-          ssh-key: ${{ secrets.DEPLOY_KEY }}
       
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -38,20 +36,13 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y skopeo
           skopeo --version
-        
-      - name: Create .npmrc
-        run: |
-          echo "@RHEcosystemAppEng:registry=https://npm.pkg.github.com" >> ~/.npmrc
 
-      - name: Install Dependencies
-        run: npm i
+      - name: RHDA analysis
+        uses: RHEcosystemAppEng/rhda-github-action@ncc
 
-      - name: Compile Typescript code
-        run: npm run compile
-
-      - name: Test RHDA
-        id: test-rhda
-        uses: ./ # Uses an action in the root directory
-        with:
-          manifest_file_path: manifests/maven/pom.xml
+      # - name: Test RHDA
+      #   id: test-rhda
+      #   uses: ./ # Uses an action in the root directory
+      #   with:
+      #     manifest_file_path: manifests/docker/Dockerfile
         

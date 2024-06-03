@@ -106,17 +106,6 @@ export function isDefined(obj: any, ...keys: string[]): boolean {
 }
 
 /**
- * The errors messages from octokit HTTP requests can be poor; prepending the status code helps clarify the problem.
- */
-export function prettifyHttpError(err: any): Error {
-    const status = err.status;
-    if (status && err.message) {
-        return new Error(`Received status ${status}: ${err.message}`);
-    }
-    return err;
-}
-
-/**
  * Run 'crda' with the given arguments.
  *
  * @throws If the exitCode is not 0, unless execOptions.ignoreReturnCode is set.
