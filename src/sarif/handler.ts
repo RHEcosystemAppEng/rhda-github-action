@@ -1,6 +1,5 @@
 import * as ghCore from '@actions/core';
 import * as github from "@actions/github";
-import path from 'path';
 
 import { Inputs, Outputs } from '../generated/inputs-outputs.js';
 import * as convert from './convert.js';
@@ -14,7 +13,7 @@ export async function handleSarif(rhdaReportJson: any, manifestFilePath: string,
 
     const { sarifObject: rhdaReportSarif, vulSeverity: vulSeverity } = await convert.generateSarif(rhdaReportJson, manifestFilePath, ecosystem);
 
-    const rhdaReportSarifFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`);
+    const rhdaReportSarifFilePath: string = `${process.cwd()}/${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`;
     await utils.writeToFile(JSON.stringify(rhdaReportSarif,null,4), rhdaReportSarifFilePath);
     
     ghCore.info(`✅ Successfully converted RHDA report JSON to SARIF`);

@@ -38,20 +38,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y skopeo
           skopeo --version
-        
-      - name: Create .npmrc
-        run: |
-          echo "@RHEcosystemAppEng:registry=https://npm.pkg.github.com" >> ~/.npmrc
-
-      - name: Install Dependencies
-        run: npm i
-
-      - name: Compile Typescript code
-        run: npm run compile
 
       - name: Test RHDA
         id: test-rhda
         uses: ./ # Uses an action in the root directory
         with:
-          manifest_file_path: manifests/maven/pom.xml
+          manifest_file_path: manifests/docker/Dockerfile
         

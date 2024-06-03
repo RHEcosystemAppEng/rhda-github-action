@@ -12,8 +12,7 @@ import path from 'path';
  */
 function imageAnalysisService(images: IImageRef[], options: IOptions): Promise<any> {
   return new Promise<any>(async (resolve, reject) => {
-    const __dirname = path.resolve();
-    const jarPath = `${__dirname}/javaApiAdapter/exhort-java-api-adapter-1.0-SNAPSHOT-jar-with-dependencies.jar`;
+    const jarPath = `${process.cwd()}/javaApiAdapter/exhort-java-api-adapter-1.0-SNAPSHOT-jar-with-dependencies.jar`;
     const reportType = 'json';
     let parameters = '';
     let properties = '';

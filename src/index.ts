@@ -50,15 +50,7 @@ async function run(): Promise<void> {
 
   const {manifestFilePath, ecosystem} = await resolveManifestFilePath();
 
-  const rhdaReportJson: any = await generateRHDAReport(manifestFilePath, ecosystem);
-
-  /* Save RHDA report to file */
-
-  const rhdaReportJsonFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`);
-  await utils.writeToFile(JSON.stringify(rhdaReportJson,null,4), rhdaReportJsonFilePath);
-  
-  ghCore.info(`✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`);
-  ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
+  const {rhdaReportJson, rhdaReportJsonFilePath} = await generateRHDAReport(manifestFilePath, ecosystem);
 
   /* Convert to SARIF and upload SARIF */
 
