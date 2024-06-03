@@ -24,7 +24,6 @@ export async function uploadSarifFile(
     const octokit = new Octokit({ auth: ghToken });
     let sarifId;
     try {
-        console.log('trying to upload...')
         const uploadResponse = await octokit.request("POST /repos/{owner}/{repo}/code-scanning/sarifs", {
             owner,
             repo,
@@ -43,7 +42,6 @@ export async function uploadSarifFile(
         }
     }
     catch (err) {
-        console.log('failing to upload...')
         throw utils.prettifyHttpError(err);
     }
 

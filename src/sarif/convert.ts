@@ -99,7 +99,7 @@ function getManifestDataLines(filepath: string, ecosystem: string): string[] {
     return lines;
 }
 
-function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: string, vulSeverity: constants.VulnerabilitySeverity, globalRef?: string): { finalResults: sarif.Result[], finalRules: sarif.ReportingDescriptor[], vulSeverity: constants.VulnerabilitySeverity } {
+function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: string, vulSeverity: constants.VulnerabilitySeverity, imageRef?: string): { finalResults: sarif.Result[], finalRules: sarif.ReportingDescriptor[], vulSeverity: constants.VulnerabilitySeverity } {
     /*
     * creates results and rules and structures SARIF
     */
@@ -137,23 +137,17 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
             const transitives: types.IDependencyData[] = isDefined(d, 'transitive') ? d.transitive.map(t => getDependencyData(t, source)) : null;
 
             let dependencyGroup: string;
-            let dependencyName: string;
-            let dependencyVersion: string;
-
-            if ( ecosystem === constants.DOCKER ) {
-                dependencyName = globalRef;
-            } else {
-                dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
-                dependencyVersion = resolveVersionFromReference(d.ref);
-            }
-            
-            if (ecosystem === constants.MAVEN || ecosystem === constants.GRADLE) {
+            let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
+            let dependencyVersion = resolveVersionFromReference(d.ref);
+            const refEcosystem = resolveEcosystemFromReference(d.ref);
+            if (refEcosystem === constants.MAVEN || refEcosystem === constants.GRADLE) {
                 dependencyGroup = dependencyName.split('/')[0];
                 dependencyName = dependencyName.split('/')[1];
             }
 
             return {
-                ref: globalRef || d.ref,
+                imageRef: imageRef,
+                depRef: d.ref,
                 depGroup: dependencyGroup,
                 depName: dependencyName,
                 depVersion: dependencyVersion,
@@ -201,7 +195,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
             return 1 + 
                 lines.findIndex((line) => {
                     const match = line.match(FROM_REGEX);
-                    return match && (match[1].includes(dd.depName) || match[1].includes(dd.depName.replace(':latest', '')));
+                    return match && (match[1].includes(dd.imageRef) || match[1].includes(dd.imageRef.replace(':latest', '')));
                 });
         };
 
@@ -237,7 +231,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
             source.dependencies.forEach(d => {
                 const dd = getDependencyData(d, source);
                 if (dd) {
-                    const refKey = globalRef || dd.ref;
+                    const refKey = imageRef || dd.depRef;
                     dependencies[refKey] = dependencies[refKey] || [];
                     dependencies[refKey].push(dd);
                 }

@@ -13,7 +13,7 @@ export async function handleSarif(rhdaReportJson: any, manifestFilePath: string,
     ghCore.info(`⏳ Converting RHDA report JSON to SARIF...`);
 
     const { sarifObject: rhdaReportSarif, vulSeverity: vulSeverity } = await convert.generateSarif(rhdaReportJson, manifestFilePath, ecosystem);
-    console.log(`rhdaReportSarif: ${JSON.stringify(rhdaReportSarif, null, 4)}`)
+
     const rhdaReportSarifFilePath: string = path.resolve(".", `${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`);
     await utils.writeToFile(JSON.stringify(rhdaReportSarif,null,4), rhdaReportSarifFilePath);
     

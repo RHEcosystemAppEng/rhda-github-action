@@ -2,7 +2,8 @@
  * Represents data specification related to a dependency.
  */
 export interface IDependencyData {
-    ref: string;
+    imageRef: string;
+    depRef: string;
     depGroup: string;
     depName: string;
     depVersion: string;

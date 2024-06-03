@@ -53,5 +53,5 @@ jobs:
         id: test-rhda
         uses: ./ # Uses an action in the root directory
         with:
-          manifest_file_path: manifests/docker/Dockerfile
+          manifest_file_path: manifests/maven/pom.xml
         
