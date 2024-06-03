@@ -5,7 +5,7 @@ import { Octokit } from "@octokit/core";
 import * as types from './types.js'
 import * as labels from "./labels.js";
 import { RhdaLabels } from "./labels.js";
-import { getGhToken, prettifyHttpError } from "../utils.js";
+import { getGhToken } from "../utils.js";
 
 export async function isPrScanApproved(pr: types.PrData): Promise<boolean> {
     ghCore.info(`Scan is running in a pull request, checking for approval label...`);
@@ -79,21 +79,15 @@ async function canPrAuthorWrite(pr: types.PrData): Promise<boolean> {
     
     const octokit = new Octokit({ auth: getGhToken() });
     const { owner, repo } = github.context.repo;
-    let authorPermissionResponse;
-    try {
-        ghCore.info(`Checking if the user "${pr.author}" has write `
-            + `access to repository "${owner}/${repo}"`);
-        authorPermissionResponse = await octokit.request(
-            "GET /repos/{owner}/{repo}/collaborators/{username}/permission", {
-                owner,
-                repo,
-                username: pr.author,
-            }
-        );
-    }
-    catch (err) {
-        throw prettifyHttpError(err);
-    }
+    ghCore.info(`Checking if the user "${pr.author}" has write `
+        + `access to repository "${owner}/${repo}"`);
+    const authorPermissionResponse = await octokit.request(
+        "GET /repos/{owner}/{repo}/collaborators/{username}/permission", {
+            owner,
+            repo,
+            username: pr.author,
+        }
+    );
 
     const permission = authorPermissionResponse.data.permission;
     if (permission === "admin" || permission === "write") {

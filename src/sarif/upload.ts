@@ -23,26 +23,22 @@ export async function uploadSarifFile(
     // API documentation: https://docs.github.com/en/rest/reference/code-scanning#update-a-code-scanning-alert
     const octokit = new Octokit({ auth: ghToken });
     let sarifId;
-    try {
-        const uploadResponse = await octokit.request("POST /repos/{owner}/{repo}/code-scanning/sarifs", {
-            owner,
-            repo,
-            ref,
-            commit_sha: sha,
-            sarif: sarifZipped,
-            // checkout_uri: manifestDir,
-            started_at: analysisStartTime,
-            tool_name: "Red Hat Dependency Analytics",
-        });
 
-        ghCore.debug(JSON.stringify(uploadResponse));
-        if (uploadResponse.data.id !== undefined) {
-            ghCore.debug(uploadResponse.data.id);
-            sarifId = uploadResponse.data.id;
-        }
-    }
-    catch (err) {
-        throw utils.prettifyHttpError(err);
+    const uploadResponse = await octokit.request("POST /repos/{owner}/{repo}/code-scanning/sarifs", {
+        owner,
+        repo,
+        ref,
+        commit_sha: sha,
+        sarif: sarifZipped,
+        // checkout_uri: manifestDir,
+        started_at: analysisStartTime,
+        tool_name: "Red Hat Dependency Analytics",
+    });
+
+    ghCore.debug(JSON.stringify(uploadResponse));
+    if (uploadResponse.data.id !== undefined) {
+        ghCore.debug(uploadResponse.data.id);
+        sarifId = uploadResponse.data.id;
     }
 
     if (!sarifId) {
@@ -91,24 +87,18 @@ async function waitForUploadToFinish(ghToken: string, sarifId: string): Promise<
     let tries = 0;
 
     while (uploadStatus !== "complete") {
-        try {
-            const response = await octokit.request("GET /repos/{owner}/{repo}/code-scanning/sarifs/{sarif_id}", {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                sarif_id: sarifId,
-            });
+        const response = await octokit.request("GET /repos/{owner}/{repo}/code-scanning/sarifs/{sarif_id}", {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            sarif_id: sarifId,
+        });
 
-            ghCore.debug(JSON.stringify(response));
-            if (response.data.processing_status !== undefined) {
-                uploadStatus = response.data.processing_status;
+        ghCore.debug(JSON.stringify(response));
+        if (response.data.processing_status !== undefined) {
+            uploadStatus = response.data.processing_status;
 
-                const emoji = uploadStatus === "pending" ? "⏳ " : "";
-                ghCore.info(`${emoji}Upload is ${response.data.processing_status}`);
-            }
-
-        }
-        catch (err) {
-            throw utils.prettifyHttpError(err);
+            const emoji = uploadStatus === "pending" ? "⏳ " : "";
+            ghCore.info(`${emoji}Upload is ${response.data.processing_status}`);
         }
 
         if (tries > maxTries) {
