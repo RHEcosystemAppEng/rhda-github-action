@@ -19,7 +19,7 @@ export async function resolveManifestFilePath (): Promise<{manifestFilePath: str
     }
 
     ghCore.info(`"${Inputs.MANIFEST_FILE_PATH}" was not provided. Auto-detecting manifest file in working directory "${process.cwd()}"`);
-    ghCore.info(`🔍 Looking for manifest file in "${path.resolve(DEFAULT_MANIFEST_DIR)}"`);
+    ghCore.info(`🔍 Looking for manifest file in "${process.cwd()}"...`);
 
     const detectedManifestFileName = await autoDetectManifest(DEFAULT_MANIFEST_DIR);
 

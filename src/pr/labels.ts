@@ -4,7 +4,7 @@ import { paginateRest } from "@octokit/plugin-paginate-rest";
 import { components } from "@octokit/openapi-types";
 import * as ghCore from "@actions/core";
 
-import { getGhToken, prettifyHttpError } from "../utils.js";
+import { getGhToken } from "../utils.js";
 
 type Label = components["schemas"]["label"];
 
@@ -106,22 +106,18 @@ export async function getLabels(prNumber?: number): Promise<string[]> {
     const ActionsOctokit = Octokit.plugin(paginateRest);
     const octokit = new ActionsOctokit({ auth: getGhToken() });
     let labelsResponse: Label[];
-    try {
-        if (prNumber) {
-            labelsResponse = await octokit.paginate("GET /repos/{owner}/{repo}/issues/{issue_number}/labels", {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                issue_number: prNumber,
-            });
-        } else {
-            labelsResponse = await octokit.paginate("GET /repos/{owner}/{repo}/labels", {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-            });
-        }
-    }
-    catch (err) {
-        throw prettifyHttpError(err);
+
+    if (prNumber) {
+        labelsResponse = await octokit.paginate("GET /repos/{owner}/{repo}/issues/{issue_number}/labels", {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+        });
+    } else {
+        labelsResponse = await octokit.paginate("GET /repos/{owner}/{repo}/labels", {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+        });
     }
 
     const availableLabels: string[] = labelsResponse.map(
@@ -134,19 +130,14 @@ export async function getLabels(prNumber?: number): Promise<string[]> {
 async function createLabels(labels: string[]): Promise<void> {
     const octokit = new Octokit({ auth: getGhToken() });
     labels.forEach(async (label) => {
-        try {
-            ghCore.info(`Creating label ${label}`);
-            await octokit.request("POST /repos/{owner}/{repo}/labels", {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                name: label,
-                color: getLabelColor(label),
-                description: getLabelDescription(label),
-            });
-        }
-        catch (err) {
-            throw prettifyHttpError(err);
-        }
+        ghCore.info(`Creating label ${label}`);
+        await octokit.request("POST /repos/{owner}/{repo}/labels", {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            name: label,
+            color: getLabelColor(label),
+            description: getLabelDescription(label),
+        });
     });
 }
 
@@ -168,17 +159,12 @@ export async function removeLabelsFromPr(prNumber: number, labels: string[]): Pr
 
     const octokit = new Octokit({ auth: getGhToken() });
     labels.forEach(async (label) => {
-        try {
-            await octokit.request("DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}", {
-                owner: github.context.repo.owner,
-                repo: github.context.repo.repo,
-                issue_number: prNumber,
-                name: label,
-            });
-        }
-        catch (err) {
-            throw prettifyHttpError(err);
-        }
+        await octokit.request("DELETE /repos/{owner}/{repo}/issues/{issue_number}/labels/{name}", {
+            owner: github.context.repo.owner,
+            repo: github.context.repo.repo,
+            issue_number: prNumber,
+            name: label,
+        });
     });
 }
 
@@ -187,15 +173,10 @@ export async function addLabelsToPr(prNumber: number, labels: string[]): Promise
     ghCore.info(`Adding labels ${labels.map((s) => `"${s}"`).join(", ")} to pull request`);
 
     const octokit = new Octokit({ auth: getGhToken() });
-    try {
-        await octokit.request("POST /repos/{owner}/{repo}/issues/{issue_number}/labels", {
-            owner: github.context.repo.owner,
-            repo: github.context.repo.repo,
-            issue_number: prNumber,
-            labels,
-        });
-    }
-    catch (err) {
-        throw prettifyHttpError(err);
-    }
+    await octokit.request("POST /repos/{owner}/{repo}/issues/{issue_number}/labels", {
+        owner: github.context.repo.owner,
+        repo: github.context.repo.repo,
+        issue_number: prNumber,
+        labels,
+    });
 }
