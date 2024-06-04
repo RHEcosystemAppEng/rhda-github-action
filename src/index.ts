@@ -1,5 +1,4 @@
 import * as ghCore from '@actions/core';
-import path from 'path';
 
 import * as utils from './utils.js'
 import { resolveManifestFilePath } from './manifestHandler.js';

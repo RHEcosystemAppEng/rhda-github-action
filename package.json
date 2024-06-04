@@ -27,7 +27,7 @@
   "license": "ISC",
   "scripts": {
     "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts",
-    "build": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
+    "bundle": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
   },
   "devDependencies": {
     "@redhat-actions/action-io-generator": "^1.5.0",
