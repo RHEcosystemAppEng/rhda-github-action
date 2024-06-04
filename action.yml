@@ -6,10 +6,12 @@ branding:
   color: red
 
 inputs:
-  manifest_file_path:
-    description: Path to target manifest file for analysis.
+  manifest_directory:
+    description: Path to the directory containing the manifest_file.
     required: false
-    default: ""
+  manifest_file:
+    description: Name (basename) of the manifest file to analyze. This file must exist in the manifest_directory.
+    required: false
   rhda_report_name:
     description: Name of the file where the Red Hat Dependency Analytics report will be saved.
     required: false
