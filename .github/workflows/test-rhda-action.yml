@@ -38,7 +38,7 @@ jobs:
           skopeo --version
 
       - name: RHDA analysis
-        uses: RHEcosystemAppEng/rhda-github-action@ncc
+        uses: RHEcosystemAppEng/rhda-github-action@main
 
       # - name: Test RHDA
       #   id: test-rhda
