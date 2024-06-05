@@ -3,7 +3,7 @@ import * as ghCore from '@actions/core';
 import * as utils from './utils.js'
 import { resolveManifestFilePath } from './manifestHandler.js';
 import { generateRHDAReport } from './rhda.js';
-import { Inputs, Outputs } from './generated/inputs-outputs.js';
+import { Inputs } from './generated/inputs-outputs.js';
 import { generateArtifacts } from './artifactHandler.js';
 import { handleSarif } from './sarif/handler.js';
 import { isPr, handlePr } from './pr/handler.js';

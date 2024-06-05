@@ -12,8 +12,6 @@ type Label = components["schemas"]["label"];
  * RHDA labels to be added to a PR
  */
 export enum RhdaLabels {
-    RHDA_SCAN_PENDING = "RHDA Scan Pending",
-    RHDA_SCAN_APPROVED = "RHDA Scan Approved",
     RHDA_SCAN_PASSED = "RHDA Scan Passed",
     RHDA_SCAN_FAILED = "RHDA Scan Failed",
     RHDA_FOUND_WARNING = "RHDA Found Warning",
@@ -21,16 +19,6 @@ export enum RhdaLabels {
 }
 
 export const repoLabels = [
-    RhdaLabels.RHDA_SCAN_PENDING, 
-    RhdaLabels.RHDA_SCAN_APPROVED,
-    RhdaLabels.RHDA_SCAN_FAILED, 
-    RhdaLabels.RHDA_SCAN_PASSED,
-    RhdaLabels.RHDA_FOUND_WARNING, 
-    RhdaLabels.RHDA_FOUND_ERROR,
-];
-
-export const labelsToCheckForRemoval = [
-    RhdaLabels.RHDA_SCAN_APPROVED,
     RhdaLabels.RHDA_SCAN_FAILED, 
     RhdaLabels.RHDA_SCAN_PASSED,
     RhdaLabels.RHDA_FOUND_WARNING, 
@@ -39,10 +27,6 @@ export const labelsToCheckForRemoval = [
 
 export function getLabelColor(label: string): string {
     switch (label) {
-    case RhdaLabels.RHDA_SCAN_APPROVED:
-        return "008080";               // teal color
-    case RhdaLabels.RHDA_SCAN_PENDING:
-        return "FBCA04";               // blue color
     case RhdaLabels.RHDA_SCAN_PASSED:
         return "0E8A16";               // green color
     case RhdaLabels.RHDA_SCAN_FAILED:
@@ -58,10 +42,6 @@ export function getLabelColor(label: string): string {
 
 export function getLabelDescription(label: string): string {
     switch (label) {
-    case RhdaLabels.RHDA_SCAN_APPROVED:
-        return "RHDA scan approved by a collaborator";
-    case RhdaLabels.RHDA_SCAN_PENDING:
-        return "RHDA scan waiting for approval";
     case RhdaLabels.RHDA_SCAN_PASSED:
         return "RHDA found no vulnerabilities";
     case RhdaLabels.RHDA_SCAN_FAILED:
@@ -102,7 +82,7 @@ export async function createRepoLabels(): Promise<void> {
 }
 
 // API documentation: https://docs.github.com/en/rest/reference/issues#list-labels-for-an-issue
-export async function getLabels(prNumber?: number): Promise<string[]> {
+async function getLabels(prNumber?: number): Promise<string[]> {
     const ActionsOctokit = Octokit.plugin(paginateRest);
     const octokit = new ActionsOctokit({ auth: getGhToken() });
     let labelsResponse: Label[];
@@ -142,9 +122,9 @@ async function createLabels(labels: string[]): Promise<void> {
 }
 
 // Find the labels present in the PR which can be removed
-export function findLabelsToRemove(availableLabels: string[]): string[] {
+function findLabelsToRemove(availableLabels: string[]): string[] {
     const labelsToRemove: string[] = [];
-    labelsToCheckForRemoval.forEach((label) => {
+    repoLabels.forEach((label) => {
         if (availableLabels.includes(label)) {
             labelsToRemove.push(label);
         }
@@ -154,7 +134,7 @@ export function findLabelsToRemove(availableLabels: string[]): string[] {
 }
 
 // API documentation: https://docs.github.com/en/rest/reference/issues#remove-a-label-from-an-issue
-export async function removeLabelsFromPr(prNumber: number, labels: string[]): Promise<void> {
+async function removeLabelsFromPr(prNumber: number, labels: string[]): Promise<void> {
     ghCore.info(`Removing labels ${labels.map((s) => `"${s}"`).join(", ")} from pull request`);
 
     const octokit = new Octokit({ auth: getGhToken() });
@@ -179,4 +159,20 @@ export async function addLabelsToPr(prNumber: number, labels: string[]): Promise
         issue_number: prNumber,
         labels,
     });
+}
+
+export async function cleanupLabels(prNumber: number) {
+    const availableLabels = await getLabels(prNumber);
+    if (availableLabels.length !== 0) {
+        ghCore.debug(`Pull request labels are: ${availableLabels.map((s) => `"${s}"`).join(", ")}`);
+
+        let labelsToRemove = findLabelsToRemove(availableLabels);
+
+        if (labelsToRemove.length > 0) {
+            await removeLabelsFromPr(prNumber, labelsToRemove);
+        }
+    }
+    else {
+        ghCore.debug("No labels found");
+    }
 }
