@@ -3,8 +3,7 @@ import * as github from '@actions/github';
 import { components } from "@octokit/openapi-types";
 
 import * as types from './types.js'
-import * as auth from './authorization.js'
-import { RhdaLabels, createRepoLabels } from './labels.js'
+import { createRepoLabels, cleanupLabels } from './labels.js'
 import * as checkout from './checkout.js'
 
 type pullRequest = components["schemas"]["pull-request-simple"];
@@ -33,19 +32,8 @@ async function handlePr(pr: types.PrData): Promise<void> {
     // create and load pr labels
     await createRepoLabels();
 
-    // check pr approval status
-    const prApproved = await auth.isPrScanApproved(pr);
-
-    if (!prApproved) {
-        // no-throw so we don't add the failed label too.
-        ghCore.error(
-            `"${RhdaLabels.RHDA_SCAN_APPROVED}" label is needed to scan this pull request with RHDA. `
-            + `Refer to https://github.com/redhat-actions/rhda/#scanning-pull-requests`
-        );
-        return;
-    }
-
-    ghCore.info(`✅ Pull request scan is approved`);
+    // remove existing rhda labels before run
+    await cleanupLabels(pr.number);
 
     // checkout pr
     await checkout.checkoutPr(pr.baseRepo.htmlUrl, pr.number);
