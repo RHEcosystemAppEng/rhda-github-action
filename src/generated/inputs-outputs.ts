@@ -53,11 +53,17 @@ export enum Inputs {
      */
     IMAGE_PLATFORM = "image_platform",
     /**
-     * Path to target manifest file for analysis.
+     * Path to the directory containing the manifest_file.
      * Required: false
-     * Default: ""
+     * Default: None.
      */
-    MANIFEST_FILE_PATH = "manifest_file_path",
+    MANIFEST_DIRECTORY = "manifest_directory",
+    /**
+     * Name (basename) of the manifest file to analyze. This file must exist in the manifest_directory.
+     * Required: false
+     * Default: None.
+     */
+    MANIFEST_FILE = "manifest_file",
     /**
      * Restricts RHDA from performing analysis on dependency tags that do not match the tags requested within the manifest files.
      * Required: true
