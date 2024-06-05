@@ -38,11 +38,13 @@ jobs:
           skopeo --version
 
       - name: RHDA analysis
-        uses: RHEcosystemAppEng/rhda-github-action@main
+        uses: RHEcosystemAppEng/rhda-github-action@chore/upgrade-manifest-search
+        with:
+          manifest_file: Dockerfile
 
       # - name: Test RHDA
       #   id: test-rhda
       #   uses: ./ # Uses an action in the root directory
-      #   with:
-      #     manifest_file_path: manifests/docker/Dockerfile
+        # with:
+        #   manifest_file_path: manifests/docker/Dockerfile
         
