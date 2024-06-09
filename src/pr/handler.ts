@@ -9,7 +9,6 @@ import * as checkout from './checkout.js';
 type PullRequest = components['schemas']['pull-request-simple'];
 
 async function isPr(): Promise<types.PrData | undefined> {
-
     // check if event is pull request
     const prRawData = github.context.payload.pull_request as PullRequest;
     if (prRawData === null) {
@@ -21,14 +20,13 @@ async function isPr(): Promise<types.PrData | undefined> {
     const pr = parsePrData(prRawData);
     ghCore.debug(`PR number is ${pr.number}`);
     ghCore.info(
-        `ℹ️ PR authored by ${pr.author} is coming from ${pr.headRepo.htmlUrl} against ${pr.baseRepo.htmlUrl}`
+        `ℹ️ PR authored by ${pr.author} is coming from ${pr.headRepo.htmlUrl} against ${pr.baseRepo.htmlUrl}`,
     );
 
     return pr;
 }
 
 async function handlePr(pr: types.PrData): Promise<void> {
-
     // create and load pr labels
     await createRepoLabels();
 
@@ -40,14 +38,17 @@ async function handlePr(pr: types.PrData): Promise<void> {
 }
 
 function parsePrData(pr: PullRequest): types.PrData {
-
     const baseOwner = pr.base.repo.owner?.login;
     if (!baseOwner) {
-        throw new Error(`Could not determine owner of pull request base repository`);
+        throw new Error(
+            `Could not determine owner of pull request base repository`,
+        );
     }
     const headOwner = pr.head.repo.owner?.login;
     if (!headOwner) {
-        throw new Error(`Could not determine owner of pull request head repository`);
+        throw new Error(
+            `Could not determine owner of pull request head repository`,
+        );
     }
 
     return {

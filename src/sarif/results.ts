@@ -3,25 +3,32 @@ import path from 'path';
 
 import * as types from './types.js';
 import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
-import { resolveDependencyFromReference, resolveVersionFromReference } from './convert.js';
+import {
+    resolveDependencyFromReference,
+    resolveVersionFromReference,
+} from './convert.js';
 
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,
     manifestFilePath: string,
     startLine: number,
     refHasIssues: boolean,
-): [ sarif.Result[], sarif.ReportingDescriptor[] ] {
-
+): [sarif.Result[], sarif.ReportingDescriptor[]] {
     const results: sarif.Result[] = [];
     const rules: sarif.ReportingDescriptor[] = [];
 
-    const generateIssueResults = (issues: types.IIssue[], dependencyData: types.IDependencyData, isDirect: boolean) => {
+    const generateIssueResults = (
+        issues: types.IIssue[],
+        dependencyData: types.IDependencyData,
+        isDirect: boolean,
+    ) => {
         issues.forEach((issue) => {
-            let textMessage = `This line introduces a "${issue.title}" vulnerability with `
-                + `${issue.severity} severity.\n`
-                + `Vulnerability data provider is ${dependencyData.providerId}.\n`
-                + `Vulnerability data source is ${dependencyData.sourceId}.\n`
-                + `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depGroup ? `${dependencyData.depGroup}/` : ''}${dependencyData.depName}${dependencyData.depVersion ? ` version ${dependencyData.depVersion}` : ''}.`;
+            let textMessage =
+                `This line introduces a "${issue.title}" vulnerability with ` +
+                `${issue.severity} severity.\n` +
+                `Vulnerability data provider is ${dependencyData.providerId}.\n` +
+                `Vulnerability data source is ${dependencyData.sourceId}.\n` +
+                `Vulnerable${isDirect ? '' : ' transitive'} dependency is ${dependencyData.depGroup ? `${dependencyData.depGroup}/` : ''}${dependencyData.depName}${dependencyData.depVersion ? ` version ${dependencyData.depVersion}` : ''}.`;
 
             if (issue.remediation.trustedContent) {
                 textMessage = `${textMessage}\nRecommended remediation version: ${resolveVersionFromReference(issue.remediation.trustedContent.ref)}`;
@@ -34,29 +41,32 @@ export function rhdaToResult(
                 startLine,
             );
 
-            const directRef = rhdaDependency.imageRef ? rhdaDependency.imageRef : resolveDependencyFromReference(rhdaDependency.depRef);
+            const directRef = rhdaDependency.imageRef
+                ? rhdaDependency.imageRef
+                : resolveDependencyFromReference(rhdaDependency.depRef);
             const rule = fetchIssueRules(issue, directRef);
 
             rules.push(rule);
             results.push(result);
         });
     };
-    
+
     if (refHasIssues) {
         if (rhdaDependency.issues && rhdaDependency.issues.length > 0) {
             generateIssueResults(rhdaDependency.issues, rhdaDependency, true);
         }
 
-        if (rhdaDependency.transitives && rhdaDependency.transitives.length > 0) {
+        if (
+            rhdaDependency.transitives &&
+            rhdaDependency.transitives.length > 0
+        ) {
             rhdaDependency.transitives.forEach((td: types.IDependencyData) => {
                 if (td.issues && td.issues.length > 0) {
                     generateIssueResults(td.issues, td, false);
                 }
             });
         }
-
-    }  else if (!refHasIssues && rhdaDependency.recommendationRef) {
-
+    } else if (!refHasIssues && rhdaDependency.recommendationRef) {
         const textMessage = `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
 
         const result = fetchResult(
@@ -72,15 +82,15 @@ export function rhdaToResult(
         results.push(result);
     }
 
-    return [ results, rules ];
+    return [results, rules];
 }
 
 function fetchResult(
     ruleId: string,
     textMessage: string,
-    manifestFilePath: string, 
+    manifestFilePath: string,
     startLine: number,
-){
+) {
     const message: sarif.Message = {
         text: textMessage,
     };
@@ -104,7 +114,7 @@ function fetchResult(
     const result: sarif.Result = {
         ruleId,
         message,
-        locations: [ location ],
+        locations: [location],
     };
 
     return result;

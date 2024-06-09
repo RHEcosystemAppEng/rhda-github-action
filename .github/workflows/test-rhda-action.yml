@@ -1,48 +1,47 @@
 name: Test RHDA Github Action
 
 on:
-  pull_request_target:
-    types: [assigned, opened, synchronize, reopened, edited]
-  
+    pull_request_target:
+        types: [assigned, opened, synchronize, reopened, edited]
+
 jobs:
-  rhda_job:
-    runs-on: ubuntu-latest
-    name: Testing RHDA action
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
-      
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 20
-          registry-url: 'https://npm.pkg.github.com'
-        env:
-          NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    rhda_job:
+        runs-on: ubuntu-latest
+        name: Testing RHDA action
+        steps:
+            - name: Checkout repository
+              uses: actions/checkout@v4
 
-      - name: Set up JDK 20
-        uses: actions/setup-java@v4
-        with:
-          distribution: 'temurin'
-          java-version: '20'
+            - name: Setup Node.js
+              uses: actions/setup-node@v4
+              with:
+                  node-version: 20
+                  registry-url: 'https://npm.pkg.github.com'
+              env:
+                  NODE_AUTH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Install syft
-        run: |
-          curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
-          syft version
+            - name: Set up JDK 20
+              uses: actions/setup-java@v4
+              with:
+                  distribution: 'temurin'
+                  java-version: '20'
 
-      - name: Install skopeo
-        run: |
-          sudo apt-get update
-          sudo apt-get install -y skopeo
-          skopeo --version
+            - name: Install syft
+              run: |
+                  curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+                  syft version
 
-      - name: RHDA analysis
-        uses: RHEcosystemAppEng/rhda-github-action@main
+            - name: Install skopeo
+              run: |
+                  sudo apt-get update
+                  sudo apt-get install -y skopeo
+                  skopeo --version
 
-      # - name: Test RHDA
-      #   id: test-rhda
-      #   uses: ./ # Uses an action in the root directory
-      #   with:
-      #     manifest_file_path: manifests/docker/Dockerfile
-        
+            - name: RHDA analysis
+              uses: RHEcosystemAppEng/rhda-github-action@main
+
+            # - name: Test RHDA
+            #   id: test-rhda
+            #   uses: ./ # Uses an action in the root directory
+            #   with:
+            #     manifest_file_path: manifests/docker/Dockerfile

@@ -27,7 +27,7 @@ export function fetchIssueRules(
     const defaultConfiguration = {
         level: sev,
     };
-    
+
     let fullDescription: sarif.MultiformatMessageString = undefined;
     let properties: sarif.PropertyBag = undefined;
     if (issueData.cves && issueData.cvss) {
@@ -36,7 +36,11 @@ export function fetchIssueRules(
         };
 
         properties = {
-            tags: [ 'security', ...issueData.cves, `cvss:${issueData.cvss.cvss}` ],
+            tags: [
+                'security',
+                ...issueData.cves,
+                `cvss:${issueData.cvss.cvss}`,
+            ],
         };
     }
 
@@ -46,7 +50,7 @@ export function fetchIssueRules(
         fullDescription,
         defaultConfiguration,
         properties,
-        help
+        help,
     };
 
     return rule;
@@ -55,19 +59,18 @@ export function fetchIssueRules(
 export function fetchRecomendationRules(
     recommendation: string,
 ): sarif.ReportingDescriptor {
-
     const id = recommendation;
 
     const sev: sarif.ReportingConfiguration.level = 'note';
 
     const shortDescription: sarif.MultiformatMessageString = {
-        text: `Red Hat recommendation`
+        text: `Red Hat recommendation`,
     };
 
     const defaultConfiguration = {
         level: sev,
     };
-    
+
     const rule: sarif.ReportingDescriptor = {
         id,
         shortDescription,

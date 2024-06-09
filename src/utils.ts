@@ -12,22 +12,18 @@ export function getOS(): OS {
         const rawOS = process.platform;
         if (rawOS === 'win32') {
             currentOS = 'windows';
-        }
-        else if (rawOS === 'darwin') {
+        } else if (rawOS === 'darwin') {
             currentOS = 'macos';
-        }
-        else if (rawOS !== 'linux') {
+        } else if (rawOS !== 'linux') {
             ghCore.warning(`Unrecognized OS "${rawOS}"`);
             currentOS = 'linux';
-        }
-        else {
+        } else {
             currentOS = 'linux';
         }
     }
 
     return currentOS;
 }
-
 
 let ghToken: string | undefined;
 /**
@@ -81,13 +77,14 @@ export function escapeWindowsPathForActionsOutput(p: string): string {
 export async function zipFile(file: string): Promise<string> {
     const fileContents = await fs.readFileSync(file, 'utf-8');
     // ghCore.debug(`Raw upload size: ${utils.convertToHumanFileSize(fileContents.length)}`);
-    const zippedContents = (await zlib.gzipSync(fileContents)).toString('base64');
+    const zippedContents = (await zlib.gzipSync(fileContents)).toString(
+        'base64',
+    );
     // ghCore.debug(`Zipped file: ${zippedContents}`);
     // ghCore.info(`Zipped upload size: ${utils.convertToHumanFileSize(zippedContents.length)}`);
 
     return zippedContents;
 }
-
 
 /**
  * Checks if the specified keys are defined within the provided object.
@@ -96,13 +93,13 @@ export async function zipFile(file: string): Promise<string> {
  * @returns A boolean indicating whether all specified keys are defined within the object.
  */
 export function isDefined(obj: any, ...keys: string[]): boolean {
-  for (const key of keys) {
-      if (!obj || !obj[key]) {
-          return false;
-      }
-      obj = obj[key];
-  }
-  return true;
+    for (const key of keys) {
+        if (!obj || !obj[key]) {
+            return false;
+        }
+        obj = obj[key];
+    }
+    return true;
 }
 
 /**
@@ -116,10 +113,10 @@ export function isDefined(obj: any, ...keys: string[]): boolean {
  */
 
 export async function execCommand(
-    executable: string, 
-    args: string[], 
-    options: ghExec.ExecOptions = {}
-): Promise<{ exitCode: number, stdout: string, stderr: string }> {
+    executable: string,
+    args: string[],
+    options: ghExec.ExecOptions = {},
+): Promise<{ exitCode: number; stdout: string; stderr: string }> {
     ghCore.debug(`running "${executable} ${args.join(' ')}"`);
 
     let stdout = '';
@@ -133,8 +130,8 @@ export async function execCommand(
             },
             stderr: (data: Buffer) => {
                 stderr += data.toString();
-            }
-        }
+            },
+        },
     };
 
     const exitCode = await ghExec.exec(executable, args, execOptions);
@@ -142,6 +139,8 @@ export async function execCommand(
 }
 
 export async function getCommitSha(): Promise<string> {
-    const commitSha = (await execCommand(getGitExecutable(), [ 'rev-parse', 'HEAD' ])).stdout;
+    const commitSha = (
+        await execCommand(getGitExecutable(), ['rev-parse', 'HEAD'])
+    ).stdout;
     return commitSha.trim();
 }
