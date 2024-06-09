@@ -1,47 +1,57 @@
 {
-  "name": "rhda-github-action",
-  "version": "1.0.0",
-  "description": "This action reflects the Red Hat Dependency Analytics VSCode extension for Github Actions.",
-  "homepage": "https://github.com/RHEcosystemAppEng/rhda-github-action#README.md",
-  "bugs": "https://github.com/RHEcosystemAppEng/rhda-github-action/issues",
-  "repository": "github:RHEcosystemAppEng/rhda-github-action",
-  "publishConfig": {
-    "registry": "https://npm.pkg.github.com"
-  },
-  "keywords": [
-    "analysis",
-    "rhda",
-    "exhort",
-    "secure",
-    "supply-chain",
-    "vulnerability"
-  ],
-  "engines": {
-    "node": ">= 20.0.0",
-    "npm": ">= 10.0.0"
-  },
-  "type": "module",
-  "main": "dist/index.js",
-  "module": "dist/index.js",
-  "author": "",
-  "license": "ISC",
-  "scripts": {
-    "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts",
-    "bundle": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt"
-  },
-  "devDependencies": {
-    "@redhat-actions/action-io-generator": "^1.5.0",
-    "@types/node": "^20.11.24",
-    "@types/sarif": "^2.1.7",
-    "@vercel/ncc": "^0.38.1",
-    "ts-node": "^10.9.2",
-    "typescript": "^5.3.3"
-  },
-  "dependencies": {
-    "@actions/artifact": "^2.1.4",
-    "@actions/core": "^1.10.1",
-    "@actions/exec": "^1.1.1",
-    "@actions/github": "^6.0.0",
-    "@rhecosystemappeng/exhort-javascript-api": "^0.1.1-ea.42"
-  }
+    "name": "rhda-github-action",
+    "version": "1.0.0",
+    "description": "This action reflects the Red Hat Dependency Analytics VSCode extension for Github Actions.",
+    "homepage": "https://github.com/RHEcosystemAppEng/rhda-github-action#README.md",
+    "bugs": "https://github.com/RHEcosystemAppEng/rhda-github-action/issues",
+    "repository": "github:RHEcosystemAppEng/rhda-github-action",
+    "publishConfig": {
+        "registry": "https://npm.pkg.github.com"
+    },
+    "keywords": [
+        "analysis",
+        "rhda",
+        "exhort",
+        "secure",
+        "supply-chain",
+        "vulnerability"
+    ],
+    "engines": {
+        "node": ">= 20.0.0",
+        "npm": ">= 10.0.0"
+    },
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "author": "",
+    "license": "ISC",
+    "scripts": {
+        "generate-ios": "npx action-io-generator -w -o ./src/generated/inputs-outputs.ts",
+        "bundle": "npx ncc build src/index.ts -o dist --source-map --license licenses.txt",
+        "lint": "eslint . --ext .ts,.tsx",
+        "lint:fix": "eslint . --ext .ts,.tsx --fix",
+        "format:write": "npx prettier --write .",
+        "format:check": "npx prettier --check ."
+    },
+    "devDependencies": {
+        "@redhat-actions/action-io-generator": "^1.5.0",
+        "@types/node": "^20.11.24",
+        "@types/sarif": "^2.1.7",
+        "@typescript-eslint/eslint-plugin": "^7.12.0",
+        "@typescript-eslint/parser": "^7.12.0",
+        "@vercel/ncc": "^0.38.1",
+        "eslint": "^8.57.0",
+        "eslint-config-prettier": "^9.1.0",
+        "eslint-plugin-prettier": "^5.1.3",
+        "prettier": "^3.3.1",
+        "ts-node": "^10.9.2",
+        "typescript": "^5.3.3"
+    },
+    "dependencies": {
+        "@actions/artifact": "^2.1.4",
+        "@actions/core": "^1.10.1",
+        "@actions/exec": "^1.1.1",
+        "@actions/github": "^6.0.0",
+        "@rhecosystemappeng/exhort-javascript-api": "^0.1.1-ea.42"
+    }
 }

@@ -1,16 +1,14 @@
 {
-  "compilerOptions": {
-    "module": "esnext",
-    "target": "esnext",
-    "lib": ["esnext"],
-    "moduleResolution": "node",
-    "esModuleInterop": true,
-    "sourceMap": true,
-    "outDir": "dist",
-    "rootDir": "."
-  },
-  "include": [
-    "src/**/*"
-  ],
-  "exclude": ["node_modules"]
+    "compilerOptions": {
+        "module": "esnext",
+        "target": "esnext",
+        "lib": ["esnext"],
+        "moduleResolution": "node",
+        "esModuleInterop": true,
+        "sourceMap": true,
+        "outDir": "dist",
+        "rootDir": "."
+    },
+    "include": ["src/**/*"],
+    "exclude": ["node_modules"]
 }

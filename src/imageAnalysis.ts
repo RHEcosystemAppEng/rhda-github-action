@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as ghCore from '@actions/core';
 
-import { Inputs, Outputs } from './generated/inputs-outputs.js';
+import { Inputs } from './generated/inputs-outputs.js';
 import { imageAnalysisService } from './exhortServices.js';
 import { UTM_SOURCE } from './constants.js';
 
@@ -65,14 +65,14 @@ interface IImageAnalysis {
 class DockerImageAnalysis implements IImageAnalysis {
     options: IOptions = {
         // 'RHDA_TOKEN': globalConfig.telemetryId,
-        'RHDA_SOURCE': UTM_SOURCE,
-        'EXHORT_SYFT_PATH': ghCore.getInput(Inputs.SYFT_EXECUTABLE_PATH),
-        'EXHORT_SYFT_CONFIG_PATH': ghCore.getInput(Inputs.SYFT_CONFIG_PATH),
-        'EXHORT_SKOPEO_PATH': ghCore.getInput(Inputs.SKOPEO_EXECUTABLE_PATH),
-        'EXHORT_SKOPEO_CONFIG_PATH': ghCore.getInput(Inputs.SKOPEO_CONFIG_PATH),
-        'EXHORT_DOCKER_PATH': ghCore.getInput(Inputs.DOCKER_EXECUTABLE_PATH),
-        'EXHORT_PODMAN_PATH': ghCore.getInput(Inputs.PODMAN_EXECUTABLE_PATH),
-        'EXHORT_IMAGE_PLATFORM': ghCore.getInput(Inputs.IMAGE_PLATFORM),
+        RHDA_SOURCE: UTM_SOURCE,
+        EXHORT_SYFT_PATH: ghCore.getInput(Inputs.SYFT_EXECUTABLE_PATH),
+        EXHORT_SYFT_CONFIG_PATH: ghCore.getInput(Inputs.SYFT_CONFIG_PATH),
+        EXHORT_SKOPEO_PATH: ghCore.getInput(Inputs.SKOPEO_EXECUTABLE_PATH),
+        EXHORT_SKOPEO_CONFIG_PATH: ghCore.getInput(Inputs.SKOPEO_CONFIG_PATH),
+        EXHORT_DOCKER_PATH: ghCore.getInput(Inputs.DOCKER_EXECUTABLE_PATH),
+        EXHORT_PODMAN_PATH: ghCore.getInput(Inputs.PODMAN_EXECUTABLE_PATH),
+        EXHORT_IMAGE_PLATFORM: ghCore.getInput(Inputs.IMAGE_PLATFORM),
     };
     args: Map<string, string> = new Map<string, string>();
     images: IImageRef[] = [];
@@ -119,11 +119,14 @@ class DockerImageAnalysis implements IImageAnalysis {
      * @private
      */
     private replaceArgsInString(imageData: string): string {
-        return imageData.replace(/(\$\{([^{}]+)\}|\$([^{}]+))/g, (match, fullMatch, key1, key2) => {
-            const key = key1 || key2;
-            const value = this.args.get(key) || '';
-            return value;
-        });
+        return imageData.replace(
+            /(\$\{([^{}]+)\}|\$([^{}]+))/g,
+            (match, fullMatch, key1, key2) => {
+                const key = key1 || key2;
+                const value = this.args.get(key) || '';
+                return value;
+            },
+        );
     }
 
     /**
@@ -173,9 +176,11 @@ class DockerImageAnalysis implements IImageAnalysis {
     }
 
     async runImageAnalysis() {
-        this.imageAnalysisReportJson = await imageAnalysisService(this.images, this.options);
+        this.imageAnalysisReportJson = await imageAnalysisService(
+            this.images,
+            this.options,
+        );
     }
-                        
 }
 
 /**
