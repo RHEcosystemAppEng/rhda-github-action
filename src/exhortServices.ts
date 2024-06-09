@@ -2,7 +2,6 @@ import exhort from '@rhecosystemappeng/exhort-javascript-api';
 import { execSync } from 'child_process';
 
 import { IImageRef, IOptions } from './imageAnalysis.js';
-import path from 'path';
 
 /**
  * Executes RHDA image analysis using the provided images and options.

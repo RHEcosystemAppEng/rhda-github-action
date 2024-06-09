@@ -1,18 +1,18 @@
 import * as ghCore from '@actions/core';
 import * as github from '@actions/github';
-import { components } from "@octokit/openapi-types";
+import { components } from '@octokit/openapi-types';
 
-import * as types from './types.js'
-import { createRepoLabels, cleanupLabels } from './labels.js'
-import * as checkout from './checkout.js'
+import * as types from './types.js';
+import { createRepoLabels, cleanupLabels } from './labels.js';
+import * as checkout from './checkout.js';
 
-type pullRequest = components["schemas"]["pull-request-simple"];
+type PullRequest = components['schemas']['pull-request-simple'];
 
 async function isPr(): Promise<types.PrData | undefined> {
 
     // check if event is pull request
-    const prRawData = github.context.payload.pull_request as pullRequest;
-    if (prRawData == null) {
+    const prRawData = github.context.payload.pull_request as PullRequest;
+    if (prRawData === null) {
         ghCore.info(`No checkout required, item is not a pull request`);
         return;
     }
@@ -39,7 +39,7 @@ async function handlePr(pr: types.PrData): Promise<void> {
     await checkout.checkoutPr(pr.baseRepo.htmlUrl, pr.number);
 }
 
-function parsePrData(pr: pullRequest): types.PrData {
+function parsePrData(pr: PullRequest): types.PrData {
 
     const baseOwner = pr.base.repo.owner?.login;
     if (!baseOwner) {

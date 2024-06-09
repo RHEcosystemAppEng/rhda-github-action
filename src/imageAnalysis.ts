@@ -3,7 +3,7 @@
 import * as fs from 'fs';
 import * as ghCore from '@actions/core';
 
-import { Inputs, Outputs } from './generated/inputs-outputs.js';
+import { Inputs } from './generated/inputs-outputs.js';
 import { imageAnalysisService } from './exhortServices.js';
 import { UTM_SOURCE } from './constants.js';
 

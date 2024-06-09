@@ -1,10 +1,9 @@
-import * as sarif from "sarif";
+import * as sarif from 'sarif';
 import path from 'path';
 
 import * as types from './types.js';
 import { fetchIssueRules, fetchRecomendationRules } from './rules.js';
 import { resolveDependencyFromReference, resolveVersionFromReference } from './convert.js';
-import { MAVEN } from "../constants.js";
 
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,
@@ -33,7 +32,7 @@ export function rhdaToResult(
                 textMessage,
                 manifestFilePath,
                 startLine,
-            )
+            );
 
             const directRef = rhdaDependency.imageRef ? rhdaDependency.imageRef : resolveDependencyFromReference(rhdaDependency.depRef);
             const rule = fetchIssueRules(issue, directRef);
@@ -41,7 +40,7 @@ export function rhdaToResult(
             rules.push(rule);
             results.push(result);
         });
-    }
+    };
     
     if (refHasIssues) {
         if (rhdaDependency.issues && rhdaDependency.issues.length > 0) {
@@ -53,19 +52,19 @@ export function rhdaToResult(
                 if (td.issues && td.issues.length > 0) {
                     generateIssueResults(td.issues, td, false);
                 }
-            })
+            });
         }
 
     }  else if (!refHasIssues && rhdaDependency.recommendationRef) {
 
-        let textMessage = `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
+        const textMessage = `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
 
         const result = fetchResult(
             rhdaDependency.recommendationRef,
             textMessage,
             manifestFilePath,
             startLine,
-        )
+        );
 
         const rule = fetchRecomendationRules(rhdaDependency.recommendationRef);
 

@@ -1,11 +1,11 @@
 import * as ghCore from '@actions/core';
-import * as sarif from "sarif";
-import * as fs from "fs";
+import * as sarif from 'sarif';
+import * as fs from 'fs';
 
 import * as result from './results.js';
 import * as types from './types.js';
 import * as constants from '../constants.js';
-import { isDefined } from '../utils.js'
+import { isDefined } from '../utils.js';
 
 const FROM_REGEX: RegExp = /^\s*FROM\s+(.*)/;
 const ARG_REGEX: RegExp = /^\s*ARG\s+(.*)/;
@@ -14,15 +14,15 @@ export function resolveDependencyFromReference(ref: string): string {
     return ref.replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '').split('?')[0];
 }
 
-export function resolveEcosystemFromReference(ref: string): string {
+export function resolveEcosystemFromReference(ref: string): string | undefined {
     const match = ref.match(/pkg:(.*?)\//);
 
     if (match && match[1]) {
         return match[1];
     }
 
-    return undefined
-};
+    return undefined;
+}
 
 export function resolveVersionFromReference(ref: string): string {
     const resolvedRef = resolveDependencyFromReference(ref);
@@ -31,7 +31,7 @@ export function resolveVersionFromReference(ref: string): string {
 
 function getManifestDataLines(filepath: string, ecosystem: string): string[] {
 
-    const manifestData = fs.readFileSync(filepath, "utf-8");
+    const manifestData = fs.readFileSync(filepath, 'utf-8');
 
     const lines = manifestData.split(/\r\n|\n/);
 
@@ -45,7 +45,7 @@ function getManifestDataLines(filepath: string, ecosystem: string): string[] {
             str = str.replace(regexWithBraces, value).replace(regexWithoutBraces, value);
         });
         return str;
-    }
+    };
     
     if (ecosystem === constants.GRADLE) {
 
@@ -104,31 +104,31 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
     * creates results and rules and structures SARIF
     */
 
-    let finalResults: sarif.Result[] = [];
-    let finalRules: sarif.ReportingDescriptor[] = [];
-    const dependencies: Map<string, types.IDependencyData[]> = new Map<string, types.IDependencyData[]>()
+    const finalResults: sarif.Result[] = [];
+    const finalRules: sarif.ReportingDescriptor[] = [];
+    const dependencies: Map<string, types.IDependencyData[]> = new Map<string, types.IDependencyData[]>();
     const failedProviders: string[] = [];
     const sources: types.ISource[] = [];
 
     const getRecommendation = (dependency: any): string => {
         return isDefined(dependency, 'recommendation') ? resolveVersionFromReference(dependency.recommendation) : '';
-    }
+    };
 
     const getSummary = (sourceData: any): types.ISummary => {
         return isDefined(sourceData, 'summary') ? sourceData.summary : null;
-    }
+    };
 
     const getDependencies = (sourceData: any): any[] => {
         return isDefined(sourceData, 'dependencies') ? sourceData.dependencies : [];
-    }
+    };
 
     const updateVulnerabilitySeverity = (summary: types.ISummary): void => {
         if ( summary.critical > 0 || summary.high > 0) {
             vulSeverity = 'error';
-        } else if ( vulSeverity != 'error' && (summary.medium > 0 || summary.low > 0)) {
+        } else if ( vulSeverity !== 'error' && (summary.medium > 0 || summary.low > 0)) {
             vulSeverity = 'warning';
         }
-    }
+    };
 
     const getDependencyData = (d: any, source: types.ISource): types.IDependencyData => {
         if (isDefined(d, 'ref')) {
@@ -138,7 +138,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
 
             let dependencyGroup: string;
             let dependencyName = resolveDependencyFromReference(d.ref).split('@')[0];
-            let dependencyVersion = resolveVersionFromReference(d.ref);
+            const dependencyVersion = resolveVersionFromReference(d.ref);
             const refEcosystem = resolveEcosystemFromReference(d.ref);
             if (refEcosystem === constants.MAVEN || refEcosystem === constants.GRADLE) {
                 dependencyGroup = dependencyName.split('/')[0];
@@ -160,7 +160,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
             };
         }
         return null;
-    }
+    };
 
     const getStartLine = (dd: types.IDependencyData): number => {
         if (ecosystem === constants.MAVEN) {
@@ -168,7 +168,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
                 lines.findIndex((line) => {
                     return line.includes(`<artifactId>${dd.depName}</artifactId>`);
                 });
-        };
+        }
 
         if (ecosystem === constants.GRADLE) {
             const regexGroup = new RegExp(`group:\\s*(['"])${dd.depGroup}\\1`);
@@ -187,9 +187,9 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
             const regexColonWOVersion = new RegExp(`${dd.depGroup}:${dd.depName}`);
             return 1 + 
                 lines.findIndex((line) => {       
-                    return (regexName.test(line) && regexGroup.test(line)) || regexColonWOVersion.test(line) 
+                    return (regexName.test(line) && regexGroup.test(line)) || regexColonWOVersion.test(line);
                 });
-        };
+        }
 
         if (ecosystem === constants.DOCKER) {
             return 1 + 
@@ -197,13 +197,13 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
                     const match = line.match(FROM_REGEX);
                     return match && (match[1].includes(dd.imageRef) || match[1].includes(dd.imageRef.replace(':latest', '')));
                 });
-        };
+        }
 
         return 1 + 
             lines.findIndex((line) => {
                 return line.includes(dd.depName);
             });
-    }
+    };
 
     const lines = getManifestDataLines(manifestFilePath, ecosystem);
 
@@ -239,7 +239,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
         });
     }
 
-    Object.entries(dependencies).map(([ref, dependencyData]: [string, types.IDependencyData[]]) => {
+    Object.values(dependencies).map((dependencyData: types.IDependencyData[]) => {
         const refHasIssues = dependencyData.some(dd => {
             if (dd.issues && dd.issues.length > 0) { 
                 return true; 
@@ -253,7 +253,7 @@ function rhdaJsonToSarif(rhdaData: any, manifestFilePath: string, ecosystem: str
             const res = result.rhdaToResult(dd, manifestFilePath, startLine, refHasIssues);
             finalResults.push(...res[0]);
             finalRules.push(...res[1]);
-        })
+        });
     });
 
     return {
@@ -271,14 +271,14 @@ function createSarifObject(finalResults: sarif.Result[], finalRules: sarif.Repor
             {
                 tool: {
                     driver: {
-                        name: "Red Hat Dependency Analytics",
+                        name: 'Red Hat Dependency Analytics',
                         rules: finalRules,
                     },
                 },
                 results: finalResults,
             },
         ],
-    }
+    };
 }
 
 export async function generateSarif(rhdaReportJson: any, manifestFilePath: string, ecosystem: string): Promise<{ sarifObject: any, vulSeverity: constants.VulnerabilitySeverity }> {
@@ -286,15 +286,15 @@ export async function generateSarif(rhdaReportJson: any, manifestFilePath: strin
     * creates a SARIF and writes it to file
     */
 
-    let vulSeverity: constants.VulnerabilitySeverity = "none";
-    let finalResults: sarif.Result[] = [];
-    let finalRules: sarif.ReportingDescriptor[] = [];
+    let vulSeverity: constants.VulnerabilitySeverity = 'none';
+    const finalResults: sarif.Result[] = [];
+    const finalRules: sarif.ReportingDescriptor[] = [];
     
     const updateVulnerabilitySeverity = (returnedVulSeverity: constants.VulnerabilitySeverity): void => {
         if (constants.vulnerabilitySeverityOrder[returnedVulSeverity] > constants.vulnerabilitySeverityOrder[vulSeverity]) {
             vulSeverity = returnedVulSeverity;
         }
-    }
+    };
 
     if (ecosystem === constants.DOCKER) {
         Object.entries(rhdaReportJson).map(([imageRef, imageData]: [string, any]) => {

@@ -1,10 +1,10 @@
 import * as ghCore from '@actions/core';
-import * as path from "path";
-import { DefaultArtifactClient } from '@actions/artifact'
+import * as path from 'path';
+import { DefaultArtifactClient } from '@actions/artifact';
 
 import { Inputs, Outputs } from './generated/inputs-outputs.js';
 
-const artifact = new DefaultArtifactClient()
+const artifact = new DefaultArtifactClient();
 
 async function uploadArtifacts(artifactName: string, files: string[]): Promise<number> {   
     

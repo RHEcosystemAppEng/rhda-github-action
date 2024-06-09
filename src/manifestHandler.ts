@@ -1,9 +1,9 @@
-import * as ghCore from "@actions/core";
-import path from "path";
-import { promises as fs } from "fs";
+import * as ghCore from '@actions/core';
+import path from 'path';
+import { promises as fs } from 'fs';
 
-import { Inputs } from "./generated/inputs-outputs.js";
-import { fileNameToEcosystemMappings, DEFAULT_MANIFEST_DIR } from "./constants.js";
+import { Inputs } from './generated/inputs-outputs.js';
+import { fileNameToEcosystemMappings, DEFAULT_MANIFEST_DIR } from './constants.js';
 
 export async function resolveManifestFilePath (): Promise<{manifestFilePath: string, ecosystem: string}> {
     const manifestDirInput = ghCore.getInput(Inputs.MANIFEST_DIRECTORY);
@@ -50,5 +50,5 @@ async function autoDetectManifest(manifestDir: string): Promise<string> {
 
 function getUnknownManifestError(manifestDir: string): string {
     return `Failed to find a manifest file in "${manifestDir}" matching one of the expected project types. `
-        + `Expected to find one of: ${Object.keys(fileNameToEcosystemMappings).join(", ")}`;
+        + `Expected to find one of: ${Object.keys(fileNameToEcosystemMappings).join(', ')}`;
 }

@@ -1,15 +1,15 @@
 import * as ghCore from '@actions/core';
 
-import * as utils from './utils.js'
+import * as utils from './utils.js';
 import { resolveManifestFilePath } from './manifestHandler.js';
 import { generateRHDAReport } from './rhda.js';
 import { Inputs } from './generated/inputs-outputs.js';
 import { generateArtifacts } from './artifactHandler.js';
 import { handleSarif } from './sarif/handler.js';
 import { isPr, handlePr } from './pr/handler.js';
-import { getOriginalCheckoutBranch, checkoutCleanup } from './pr/checkout.js'
-import { PrData } from './pr/types.js'
-import { RhdaLabels, addLabelsToPr } from './pr/labels.js'
+import { getOriginalCheckoutBranch, checkoutCleanup } from './pr/checkout.js';
+import { PrData } from './pr/types.js';
+import { RhdaLabels, addLabelsToPr } from './pr/labels.js';
 import * as constants from './constants.js';
 
 let prData: PrData | undefined;
@@ -39,7 +39,7 @@ async function run(): Promise<void> {
   }
   else {
       sha = await utils.getCommitSha();
-      ref = utils.getEnvVar("GITHUB_REF");
+      ref = utils.getEnvVar('GITHUB_REF');
   }
 
   ghCore.info(`ℹ️ Ref to analyze is "${ref}"`);
@@ -65,10 +65,10 @@ async function run(): Promise<void> {
     let resultLabel: string;
 
     switch (vulSeverity) {
-    case "error":
+    case 'error':
         resultLabel = RhdaLabels.RHDA_FOUND_ERROR;
         break;
-    case "warning":
+    case 'warning':
         resultLabel = RhdaLabels.RHDA_FOUND_WARNING;
         break;
     default:
@@ -81,17 +81,17 @@ async function run(): Promise<void> {
 
   /* Evaluate fail_on and set the workflow step exit code accordingly */
 
-  const failOn = ghCore.getInput(Inputs.FAIL_ON) || "error";
+  const failOn = ghCore.getInput(Inputs.FAIL_ON) || 'error';
 
   if (constants.vulnerabilitySeverityOrder[vulSeverity] > 0) {
-      if (failOn !== "never") {
-          if (failOn === "warning") {
+      if (failOn !== 'never') {
+          if (failOn === 'warning') {
               ghCore.info(
                   `Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one warning was found. Failing workflow.`
               );
               ghCore.setFailed(`Found vulnerabilities in the project.`);
           }
-          else if (failOn === "error" && constants.vulnerabilitySeverityOrder[vulSeverity] === 2) {
+          else if (failOn === 'error' && constants.vulnerabilitySeverityOrder[vulSeverity] === 2) {
               ghCore.info(
                   `Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one error was found. Failing workflow.`
               );
@@ -114,13 +114,13 @@ run()
     // nothing
   })
   .catch(async (err) => {
-    if (prData != null) {
+    if (prData !== null) {
         await addLabelsToPr(prData.number, [ RhdaLabels.RHDA_SCAN_FAILED ]);
     }
     ghCore.setFailed(err.message);
   })
   .finally(async () => {
-    if (prData != null) {
+    if (prData !== null) {
       await checkoutCleanup(prData.number, originalCheckoutBranch);
     }
   });

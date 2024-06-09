@@ -1,5 +1,4 @@
 import * as ghCore from '@actions/core';
-import path from 'path';
 
 import { stackAnalysisService } from './exhortServices.js';
 import { Inputs, Outputs } from './generated/inputs-outputs.js';
@@ -35,9 +34,9 @@ export async function generateRHDAReport(manifestFilePath: string, ecosystem: st
 
   let rhdaReportJson: string | any;
   if (ecosystem === DOCKER) {
-    rhdaReportJson = await executeDockerImageAnalysis(manifestFilePath)
+    rhdaReportJson = await executeDockerImageAnalysis(manifestFilePath);
   } else {
-    rhdaReportJson = await stackAnalysisService(manifestFilePath, getDependencyAnalysisConfig())
+    rhdaReportJson = await stackAnalysisService(manifestFilePath, getDependencyAnalysisConfig());
   }
 
   /* Save RHDA report to file */

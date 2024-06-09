@@ -19,4 +19,4 @@ export interface PrData {
         repo: string,
         htmlUrl: string,
     }
-};
+}
