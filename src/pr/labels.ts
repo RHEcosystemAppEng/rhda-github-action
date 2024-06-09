@@ -110,7 +110,7 @@ async function getLabels(prNumber?: number): Promise<string[]> {
 async function createLabels(labels: string[]): Promise<void> {
     const octokit = new Octokit({ auth: getGhToken() });
     labels.forEach(async (label) => {
-        ghCore.info(`Creating label ${label}`);
+        ghCore.info(`Creating label "${label}"`);
         await octokit.request("POST /repos/{owner}/{repo}/labels", {
             owner: github.context.repo.owner,
             repo: github.context.repo.repo,

@@ -23,7 +23,7 @@ export async function handleSarif(rhdaReportJson: any, manifestFilePath: string,
 
     const uploadSarif = ghCore.getBooleanInput(Inputs.UPLOAD_SARIF);
     if (uploadSarif) {
-        const githubToken = ghCore.getInput(Inputs.GITHUB_TOKEN);
+        const githubToken = utils.getGhToken();
         // only print the security tab link if the PR head repo is also the base repo (ie, the PR is against itself)
         // otherwise, the branch will not exist and the link will be useless.
         const printSecurityTabLink = !prData
