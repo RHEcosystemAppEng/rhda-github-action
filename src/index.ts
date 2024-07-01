@@ -8,11 +8,11 @@ import { generateArtifacts } from './artifactHandler.js';
 import { handleSarif } from './sarif/handler.js';
 import { isPr, handlePr } from './pr/handler.js';
 import { getOriginalCheckoutBranch, checkoutCleanup } from './pr/checkout.js';
-import { PrData } from './pr/types.js';
+import { IPrData } from './pr/types.js';
 import { RhdaLabels, addLabelsToPr } from './pr/labels.js';
 import * as constants from './constants.js';
 
-let prData: PrData | undefined;
+let prData: IPrData | undefined;
 let originalCheckoutBranch: string;
 let sha;
 let ref;

@@ -5,7 +5,7 @@ import { Inputs, Outputs } from '../generated/inputs-outputs.js';
 import * as convert from './convert.js';
 import * as upload from './upload.js';
 import * as utils from '../utils.js';
-import { PrData } from '../pr/types.js';
+import { IPrData } from '../pr/types.js';
 import * as constants from '../constants.js';
 
 export async function handleSarif(
@@ -15,7 +15,7 @@ export async function handleSarif(
     sha: string,
     ref: string,
     analysisStartTime: string,
-    prData: PrData,
+    prData: IPrData,
 ): Promise<{
     rhdaReportSarifFilePath: string;
     vulSeverity: constants.VulnerabilitySeverity;

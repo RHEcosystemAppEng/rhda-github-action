@@ -1,4 +1,4 @@
-export interface PrData {
+export interface IPrData {
     author: string | undefined;
     number: number;
     sha: string;
