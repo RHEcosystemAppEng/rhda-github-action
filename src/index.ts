@@ -8,16 +8,16 @@ import { generateArtifacts } from './artifactHandler.js';
 import { handleSarif } from './sarif/handler.js';
 import { isPr, handlePr } from './pr/handler.js';
 import { getOriginalCheckoutBranch, checkoutCleanup } from './pr/checkout.js';
-import { PrData } from './pr/types.js';
+import { IPrData } from './pr/types.js';
 import { RhdaLabels, addLabelsToPr } from './pr/labels.js';
 import * as constants from './constants.js';
 
-let prData: PrData | undefined;
+let prData: IPrData | undefined;
 let originalCheckoutBranch: string;
 let sha;
 let ref;
 
-async function run(): Promise<void> {
+export async function run(): Promise<void> {
     ghCore.info(`ℹ️ Working directory is ${process.cwd()}`);
 
     ghCore.debug(`Runner OS is ${utils.getOS()}`);
@@ -127,13 +127,13 @@ run()
         // nothing
     })
     .catch(async (err) => {
-        if (prData !== null) {
+        if (prData) {
             await addLabelsToPr(prData.number, [RhdaLabels.RHDA_SCAN_FAILED]);
         }
         ghCore.setFailed(err.message);
     })
     .finally(async () => {
-        if (prData !== null) {
+        if (prData) {
             await checkoutCleanup(prData.number, originalCheckoutBranch);
         }
     });

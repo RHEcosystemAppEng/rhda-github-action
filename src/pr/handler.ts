@@ -8,10 +8,10 @@ import * as checkout from './checkout.js';
 
 type PullRequest = components['schemas']['pull-request-simple'];
 
-async function isPr(): Promise<types.PrData | undefined> {
+async function isPr(): Promise<types.IPrData | undefined> {
     // check if event is pull request
     const prRawData = github.context.payload.pull_request as PullRequest;
-    if (prRawData === null) {
+    if (!prRawData) {
         ghCore.info(`No checkout required, item is not a pull request`);
         return;
     }
@@ -26,7 +26,7 @@ async function isPr(): Promise<types.PrData | undefined> {
     return pr;
 }
 
-async function handlePr(pr: types.PrData): Promise<void> {
+async function handlePr(pr: types.IPrData): Promise<void> {
     // create and load pr labels
     await createRepoLabels();
 
@@ -37,7 +37,7 @@ async function handlePr(pr: types.PrData): Promise<void> {
     await checkout.checkoutPr(pr.baseRepo.htmlUrl, pr.number);
 }
 
-function parsePrData(pr: PullRequest): types.PrData {
+function parsePrData(pr: PullRequest): types.IPrData {
     const baseOwner = pr.base.repo.owner?.login;
     if (!baseOwner) {
         throw new Error(

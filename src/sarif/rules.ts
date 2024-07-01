@@ -30,7 +30,7 @@ export function fetchIssueRules(
 
     let fullDescription: sarif.MultiformatMessageString = undefined;
     let properties: sarif.PropertyBag = undefined;
-    if (issueData.cves && issueData.cvss) {
+    if(issueData.cves && issueData.cves.length > 0 ) {
         fullDescription = {
             text: `${issueData.cves.join(', ')}`,
         };
@@ -38,10 +38,21 @@ export function fetchIssueRules(
         properties = {
             tags: [
                 'security',
-                ...issueData.cves,
-                `cvss:${issueData.cvss.cvss}`,
+                ...issueData.cves
             ],
         };
+    }
+    if (issueData.cvss) {
+        if (properties) {
+            properties.tags.push(`cvss:${issueData.cvss.cvss}`) 
+        } else {
+            properties = {
+                tags: [
+                    'security',
+                    `cvss:${issueData.cvss.cvss}`
+                ],
+            }; 
+        }
     }
 
     const rule: sarif.ReportingDescriptor = {

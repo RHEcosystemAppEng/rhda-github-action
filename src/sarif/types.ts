@@ -2,9 +2,9 @@
  * Represents data specification related to a dependency.
  */
 export interface IDependencyData {
-    imageRef: string;
+    imageRef: string | undefined;
     depRef: string;
-    depGroup: string;
+    depGroup: string | undefined;
     depName: string;
     depVersion: string;
     ecosystem: string;
@@ -22,7 +22,7 @@ export interface ISource {
     providerId: string;
     sourceId: string;
     summary: ISummary | null;
-    dependencies: any[];
+    dependencies: any[] | null;
 }
 
 export interface ISummary {
@@ -36,8 +36,8 @@ export interface IIssue {
     id: string;
     title: string;
     severity: string;
-    cves: string[];
-    cvss: ICVSS;
+    cves: string[] | null;
+    cvss: ICVSS | null;
     remediation: IRemediation;
 }
 

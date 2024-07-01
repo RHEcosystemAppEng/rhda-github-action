@@ -194,4 +194,4 @@ async function executeDockerImageAnalysis(filePath: string): Promise<any> {
     return JSON.parse(dockerImageAnalysis.imageAnalysisReportJson);
 }
 
-export { executeDockerImageAnalysis, IImageRef, IOptions };
+export { executeDockerImageAnalysis, IImageRef, IOptions, DockerImageAnalysis };

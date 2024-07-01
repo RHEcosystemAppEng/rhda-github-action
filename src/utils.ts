@@ -7,32 +7,46 @@ import { Inputs } from './generated/inputs-outputs.js';
 
 type OS = 'linux' | 'macos' | 'windows';
 let currentOS: OS | undefined;
+let ghToken: string | undefined;
+let gitExecutable: string | undefined;
+
+export function setCurrentOS(value: OS | undefined) {
+    currentOS = value;
+}
+
+export function setGhToken(value: string | undefined) {
+    ghToken = value;
+}
+
+export function setGitExecutable(value: string | undefined) {
+    gitExecutable = value;
+}
+
 export function getOS(): OS {
-    if (currentOS === null) {
+    if (!currentOS) {
         const rawOS = process.platform;
         if (rawOS === 'win32') {
-            currentOS = 'windows';
+            setCurrentOS('windows');
         } else if (rawOS === 'darwin') {
-            currentOS = 'macos';
+            setCurrentOS('macos');
         } else if (rawOS !== 'linux') {
             ghCore.warning(`Unrecognized OS "${rawOS}"`);
-            currentOS = 'linux';
+            setCurrentOS('linux');
         } else {
-            currentOS = 'linux';
+            setCurrentOS('linux');
         }
     }
 
     return currentOS;
 }
 
-let ghToken: string | undefined;
 /**
  *
  * @returns GitHub token provided by the user.
  * If no token is provided, returns the empty string.
  */
 export function getGhToken(): string {
-    if (ghToken === null) {
+    if (!ghToken) {
         ghToken = ghCore.getInput(Inputs.GITHUB_TOKEN);
 
         // this to only solve the problem of local development
@@ -43,12 +57,10 @@ export function getGhToken(): string {
     return ghToken;
 }
 
-let gitExecutable: string | undefined;
 export function getGitExecutable(): string {
     if (gitExecutable) {
         return gitExecutable;
     }
-
     const git = getOS() === 'windows' ? 'git.exe' : 'git';
     gitExecutable = git;
     return git;
