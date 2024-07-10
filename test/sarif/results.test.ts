@@ -111,6 +111,92 @@ describe('rhdaToResult', () => {
         expect(results).toStrictEqual(expectedResult)
     });
 
+    it('should return correct SARIF result for a image dependency with issues', () => {
+        const refHasIssues = true;
+
+        const TransitiveDependencyData: types.IDependencyData = {
+            imageRef: 'image:tag',
+            depRef: 'pkg:ecosystem/artifact1',
+            depGroup: '',
+            depName: 'artifact1',
+            depVersion: '',
+            ecosystem: 'ecosystem',
+            providerId: 'providerId',
+            sourceId: 'sourceId',
+            issues:  [issueData],
+            transitives: null,
+            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+        };
+
+        const dependencyData: types.IDependencyData = {
+            imageRef: 'image:tag',
+            depRef: 'pkg:ecosystem/groupId/artifact@version',
+            depGroup: 'groupId',
+            depName: 'groupId/artifact',
+            depVersion: 'version',
+            ecosystem: 'ecosystem',
+            providerId: 'providerId',
+            sourceId: 'sourceId',
+            issues:  [issueData],
+            transitives: [TransitiveDependencyData],
+            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+        };
+        
+        const expectedResult = [
+            [{
+                "ruleId":issueData.id,
+                "message":{
+                    "text":`This line introduces a "${issueData.title}" vulnerability with ` +
+                    `${issueData.severity} severity.\n` +
+                    `Vulnerability data provider is ${dependencyData.providerId}.\n` +
+                    `Vulnerability data source is ${dependencyData.sourceId}.\n` +
+                    `Vulnerable dependency is ${dependencyData.depGroup}/${dependencyData.depName} version ${dependencyData.depVersion}.\n` +
+                    `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`
+                },
+                "locations":[
+                    {
+                        "physicalLocation":{
+                            "artifactLocation":{
+                                "uri":manifestFilePath
+                            },
+                            "region":{
+                                "startLine":startLine
+                            }
+                        }
+                    }
+                ]
+            },
+            {
+                "ruleId":issueData.id,
+                "message":{
+                    "text":`This line introduces a "${issueData.title}" vulnerability with ` +
+                    `${issueData.severity} severity.\n` +
+                    `Vulnerability data provider is ${TransitiveDependencyData.providerId}.\n` +
+                    `Vulnerability data source is ${TransitiveDependencyData.sourceId}.\n` +
+                    `Vulnerable transitive dependency is ${TransitiveDependencyData.depName}.\n` +
+                    `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`
+                },
+                "locations":[
+                    {
+                        "physicalLocation":{
+                            "artifactLocation":{
+                                "uri":manifestFilePath
+                            },
+                            "region":{
+                                "startLine":startLine
+                            }
+                        }
+                    }
+                ]
+            }],
+            ['example rule', 'example rule']
+        ]
+
+        const results = rhdaToResult(dependencyData, manifestFilePath, startLine, refHasIssues)
+
+        expect(results).toStrictEqual(expectedResult)
+    });
+
     it('should return correct SARIF result for a dependency without issues and with recommendation', () => {
         const refHasIssues = false;
 

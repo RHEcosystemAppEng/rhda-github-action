@@ -32,9 +32,9 @@ describe('generateRHDAReport', () => {
   const rhdaReportJsonFilePath = `${process.cwd()}/report.json`;
 
   beforeEach(() => {
-    vi.resetModules();
+    vi.clearAllMocks();
 
-    vi.spyOn(ghCore, 'getInput').mockImplementation((name) => {
+    vi.mocked(ghCore.getInput).mockImplementation((name) => {
       const inputs = {
         [Inputs.MATCH_MANIFEST_VERSION]: 'true',
         [Inputs.USE_PYTHON_VIRTUAL_ENVIRONMENT]: 'false',
@@ -54,20 +54,15 @@ describe('generateRHDAReport', () => {
       return inputs[name];
     });
 
-    vi.spyOn(exhortServices, 'stackAnalysisService').mockResolvedValue(rhdaReportJson);
+    vi.mocked(exhortServices.stackAnalysisService).mockResolvedValue(rhdaReportJson);
 
-    vi.spyOn(imageAnalysis, 'executeDockerImageAnalysis').mockResolvedValue(rhdaReportJson);
-
-    vi.spyOn(utils, 'writeToFile').mockResolvedValue(undefined);
-
-    vi.spyOn(ghCore, 'info').mockImplementation(() => {});
-
-    vi.spyOn(ghCore, 'setOutput').mockImplementation(() => {});
+    vi.mocked(imageAnalysis.executeDockerImageAnalysis).mockResolvedValue(rhdaReportJson);
   });
 
   it('should generate the RHDA report for non-Docker ecosystem', async () => {
     const result = await generateRHDAReport(manifestFilePath, MAVEN);
 
+    expect(ghCore.info).toBeCalledWith(`⏳ Analysing dependencies...`);
     expect(exhortServices.stackAnalysisService).toHaveBeenCalledWith(manifestFilePath, {
       RHDA_SOURCE: UTM_SOURCE,
       MATCH_MANIFEST_VERSIONS: 'true',
@@ -88,7 +83,9 @@ describe('generateRHDAReport', () => {
       JSON.stringify(rhdaReportJson, null, 4),
       rhdaReportJsonFilePath,
     );
+    expect(ghCore.info).toBeCalledWith(`✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`);
     expect(ghCore.setOutput).toHaveBeenCalledWith(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
+    expect(ghCore.info).toBeCalledWith(`✅ Successfully generated Red Had Dependency Analytics report`);
     expect(result).toEqual({
       rhdaReportJson: rhdaReportJson,
       rhdaReportJsonFilePath: rhdaReportJsonFilePath,
@@ -98,12 +95,15 @@ describe('generateRHDAReport', () => {
   it('should generate the RHDA report for Docker ecosystem', async () => {
     const result = await generateRHDAReport(manifestFilePath, DOCKER);
 
+    expect(ghCore.info).toBeCalledWith(`⏳ Analysing dependencies...`);
     expect(imageAnalysis.executeDockerImageAnalysis).toHaveBeenCalledWith(manifestFilePath);
     expect(utils.writeToFile).toHaveBeenCalledWith(
       JSON.stringify(rhdaReportJson, null, 4),
       rhdaReportJsonFilePath,
     );
+    expect(ghCore.info).toBeCalledWith(`✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`);
     expect(ghCore.setOutput).toHaveBeenCalledWith(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
+    expect(ghCore.info).toBeCalledWith(`✅ Successfully generated Red Had Dependency Analytics report`);
     expect(result).toEqual({
       rhdaReportJson: rhdaReportJson,
       rhdaReportJsonFilePath: rhdaReportJsonFilePath,

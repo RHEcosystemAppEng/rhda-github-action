@@ -13,11 +13,11 @@ vi.mock('../src/exhortServices', () => ({
 }));
 
 describe('executeDockerImageAnalysis', () => {
-    const mockFileContent = 'ARG TEST_ARG=14\nFROM node:${TEST_ARG}\nFROM --platform=linux python:3.8 as app\nFROM scratch\n# hello world';
+    const mockFileContent = 'ARG TEST_ARG1=node\nARG TEST_ARG2=14\nFROM ${TEST_ARG1}:$TEST_ARG2\nFROM --platform=linux python:3.8 as app\nFROM scratch\n# hello world';
     const filePath = '/mock/path/to/Dockerfile';
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
 
         vi.mocked(fs.readFileSync).mockReturnValue(mockFileContent);
     });

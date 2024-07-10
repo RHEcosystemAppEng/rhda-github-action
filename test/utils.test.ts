@@ -17,7 +17,7 @@ vi.mock('@actions/core', () => ({
 describe('getOS', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     afterEach(() => {
@@ -62,7 +62,7 @@ describe('getOS', () => {
 describe('getGhToken', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     afterEach(() => {
@@ -91,7 +91,7 @@ describe('getGhToken', () => {
 describe('getGitExecutable', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     afterEach(() => {
@@ -116,7 +116,7 @@ describe('getGitExecutable', () => {
 
 describe('getEnvVar', () => {
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     afterEach(() => {
@@ -151,7 +151,7 @@ vi.mock('fs', () => ({
 describe('writeToFile', () => {
     
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     it('should write data to the specified file path', async () => {
@@ -167,7 +167,7 @@ describe('writeToFile', () => {
 describe('escapeWindowsPathForActionsOutput', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     it('should escape backslashes in a Windows path', () => {
@@ -205,7 +205,7 @@ vi.mock('zlib', () => ({
 describe('zipFile', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     it('should zip the file contents and return as base64', async () => {
@@ -214,9 +214,9 @@ describe('zipFile', () => {
         const zippedContent = 'zipped content';
         const mockZipped = Buffer.from(zippedContent).toString('base64');
 
-        vi.spyOn(fs, 'readFileSync').mockReturnValue(mockContent);
+        vi.mocked(fs.readFileSync).mockReturnValue(mockContent);
 
-        vi.spyOn(zlib, 'gzipSync').mockReturnValue(Buffer.from(zippedContent));
+        vi.mocked(zlib.gzipSync).mockReturnValue(Buffer.from(zippedContent));
 
         const result = await utils.zipFile(mockFile);
 
@@ -229,7 +229,7 @@ describe('zipFile', () => {
 describe('isDefined', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     it('should return true when all keys are defined in the object (with key request)', () => {
@@ -296,7 +296,7 @@ vi.mock('@actions/exec', () => ({
 describe('execCommand', () => {
 
     beforeEach(() => {
-        vi.resetModules();
+        vi.clearAllMocks();
     });
 
     it('should execute a command and return the result', async () => {
@@ -307,7 +307,7 @@ describe('execCommand', () => {
         const mockExitCode = 0;
         const mockStdout = 'hello\n';
         const mockStderr = '';
-        vi.spyOn(ghExec, 'exec').mockImplementation(
+        vi.mocked(ghExec.exec).mockImplementation(
             (commandLine: string, args?: string[] | undefined, options?: ghExec.ExecOptions | undefined) => {
                 options?.listeners?.stdout!(Buffer.from(mockStdout));
                 options?.listeners?.stderr!(Buffer.from(mockStderr));
@@ -332,7 +332,7 @@ describe('getCommitSha', () => {
         const mockExitCode = 0;
         const mockStdout = `${mockSha}\n`;
         const mockStderr = '';
-        vi.spyOn(ghExec, 'exec').mockImplementation(
+        vi.mocked(ghExec.exec).mockImplementation(
             (commandLine: string, args?: string[] | undefined, options?: ghExec.ExecOptions | undefined) => {
                 options?.listeners?.stdout!(Buffer.from(mockStdout));
                 options?.listeners?.stderr!(Buffer.from(mockStderr));

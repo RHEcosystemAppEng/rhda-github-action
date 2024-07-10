@@ -37,7 +37,7 @@ describe('uploadSarifFile', () => {
         vi.mocked(utils.getEnvVar).mockReturnValue('https://github.com');
     });
 
-    it('should upload SARIF file successfully and print security tab link', async () => {
+    it('should upload SARIF file successfully and print security tab link with branch', async () => {
         const printSecurityTabLink = true;
         const ocktokitResponse = {
             data: { id: 'sarif-id', processing_status: 'complete' },
@@ -64,7 +64,7 @@ describe('uploadSarifFile', () => {
             {
                 owner: uploadToRepo.owner,
                 repo: uploadToRepo.repo,
-                ref,
+                ref: ref,
                 commit_sha: sha,
                 sarif: sarifZipped,
                 started_at: analysisStartTime,
@@ -85,6 +85,57 @@ describe('uploadSarifFile', () => {
         expect(ghCore.info).toHaveBeenNthCalledWith(3, `✅ Successfully uploaded SARIF file`);
         expect(utils.getEnvVar).toHaveBeenCalledWith('GITHUB_SERVER_URL');
         expect(ghCore.info).toHaveBeenNthCalledWith(4, `👀 Review the Code Scanning results in the Security tab: https://github.com/owner/repo/security/code-scanning?${new URLSearchParams('query=is:open sort:created-desc branch:main')}`);
+    });
+
+    it('should upload SARIF file successfully and print security tab link without branch', async () => {
+        const refWoBranch = 'refs/heads';
+        const printSecurityTabLink = true;
+        const ocktokitResponse = {
+            data: { id: 'sarif-id', processing_status: 'complete' },
+        }
+        const octokitMock = {
+            request: vi.fn().mockResolvedValue(ocktokitResponse),
+        };
+        (Octokit as any).mockImplementation(() => octokitMock as any);
+
+        await uploadSarifFile(
+            ghToken,
+            sarifPath,
+            analysisStartTime,
+            sha,
+            refWoBranch,
+            uploadToRepo,
+            printSecurityTabLink
+        );
+
+        expect(utils.zipFile).toHaveBeenCalledWith(sarifPath);
+        expect(ghCore.info).toHaveBeenNthCalledWith(1, `⬆️ Uploading SARIF to ${uploadToRepo.owner}/${uploadToRepo.repo}`);
+        expect(octokitMock.request).toHaveBeenCalledWith(
+            'POST /repos/{owner}/{repo}/code-scanning/sarifs',
+            {
+                owner: uploadToRepo.owner,
+                repo: uploadToRepo.repo,
+                ref: refWoBranch,
+                commit_sha: sha,
+                sarif: sarifZipped,
+                started_at: analysisStartTime,
+                tool_name: 'Red Hat Dependency Analytics',
+            }
+        );
+        expect(ghCore.startGroup).toHaveBeenNthCalledWith(1, `⏳ Waiting for SARIF to upload...`);
+        expect(octokitMock.request).toHaveBeenCalledWith(
+            'GET /repos/{owner}/{repo}/code-scanning/sarifs/{sarif_id}',
+            {
+                owner: github.context.repo.owner,
+                repo: github.context.repo.repo,
+                sarif_id: ocktokitResponse.data.id,
+            },
+        );
+        expect(ghCore.endGroup).toHaveBeenCalled();
+        expect(ghCore.info).toHaveBeenNthCalledWith(2, `Upload is ${ocktokitResponse.data.processing_status}`);
+        expect(ghCore.info).toHaveBeenNthCalledWith(3, `✅ Successfully uploaded SARIF file`);
+        expect(utils.getEnvVar).toHaveBeenCalledWith('GITHUB_SERVER_URL');
+        expect(ghCore.info).toHaveBeenNthCalledWith(4, `👀 Review the Code Scanning results in the Security tab: https://github.com/owner/repo/security/code-scanning?${new URLSearchParams('query=is:open sort:created-desc')}`);
     });
 
     it('should upload SARIF file successfully and not print security tab link', async () => {
