@@ -8,9 +8,6 @@ import { getGhToken } from '../utils.js';
 
 type Label = components['schemas']['label'];
 
-/**
- * RHDA labels to be added to a PR
- */
 export enum RhdaLabels {
     RHDA_SCAN_PASSED = 'RHDA Scan Passed',
     RHDA_SCAN_FAILED = 'RHDA Scan Failed',
@@ -18,6 +15,9 @@ export enum RhdaLabels {
     RHDA_FOUND_ERROR = 'RHDA Found Error',
 }
 
+/**
+ * RHDA labels to be added to a PR
+ */
 export const repoLabels = [
     RhdaLabels.RHDA_SCAN_FAILED,
     RhdaLabels.RHDA_SCAN_PASSED,
@@ -25,6 +25,11 @@ export const repoLabels = [
     RhdaLabels.RHDA_FOUND_ERROR,
 ];
 
+/**
+ * Returns the color associated with a specific RHDA label.
+ * @param label - The RHDA label.
+ * @returns The color associated with the label in hex format.
+ */
 export function getLabelColor(label: string): string {
     switch (label) {
         case RhdaLabels.RHDA_SCAN_PASSED:
@@ -40,6 +45,11 @@ export function getLabelColor(label: string): string {
     }
 }
 
+/**
+ * Returns the description associated with a specific RHDA label.
+ * @param label - The RHDA label.
+ * @returns The description associated with the label.
+ */
 export function getLabelDescription(label: string): string {
     switch (label) {
         case RhdaLabels.RHDA_SCAN_PASSED:
@@ -55,6 +65,9 @@ export function getLabelDescription(label: string): string {
     }
 }
 
+/**
+ * Creates RHDA labels in the repository if they do not already exist.
+ */
 export async function createRepoLabels(): Promise<void> {
     const availableLabels = await getLabels();
     if (availableLabels.length !== 0) {
@@ -85,7 +98,12 @@ export async function createRepoLabels(): Promise<void> {
     await createLabels(labelsToCreate);
 }
 
-// API documentation: https://docs.github.com/en/rest/reference/issues#list-labels-for-an-issue
+/**
+ * Retrieves the list of labels in the repository.
+ * API documentation: https://docs.github.com/en/rest/reference/issues#list-labels-for-an-issue
+ * @param prNumber - Optional pull request number to fetch labels specific to a pull request.
+ * @returns An array of label names present in the repository or the PR.
+ */
 async function getLabels(prNumber?: number): Promise<string[]> {
     const actionsOctokit = Octokit.plugin(paginateRest);
     const octokit = new actionsOctokit({ auth: getGhToken() });
@@ -116,7 +134,11 @@ async function getLabels(prNumber?: number): Promise<string[]> {
     return availableLabels;
 }
 
-// API documentation: https://docs.github.com/en/rest/reference/issues#create-a-label
+/**
+ * Creates labels in the repository using the provided label names.
+ * API documentation: https://docs.github.com/en/rest/reference/issues#create-a-label
+ * @param labels - An array of label names to create.
+ */
 async function createLabels(labels: string[]): Promise<void> {
     const octokit = new Octokit({ auth: getGhToken() });
     labels.forEach(async (label) => {
@@ -131,7 +153,11 @@ async function createLabels(labels: string[]): Promise<void> {
     });
 }
 
-// Find the labels present in the PR which can be removed
+/**
+ * Finds labels in the repository that can be removed from a pull request.
+ * @param availableLabels - An array of label names currently applied to the pull request.
+ * @returns An array of RHDA label names that are present in the pull request and should be removed.
+ */
 function findLabelsToRemove(availableLabels: string[]): string[] {
     const labelsToRemove: string[] = [];
     repoLabels.forEach((label) => {
@@ -143,7 +169,12 @@ function findLabelsToRemove(availableLabels: string[]): string[] {
     return labelsToRemove;
 }
 
-// API documentation: https://docs.github.com/en/rest/reference/issues#remove-a-label-from-an-issue
+/**
+ * Removes specified labels from a pull request.
+ * API documentation: https://docs.github.com/en/rest/reference/issues#remove-a-label-from-an-issue
+ * @param prNumber - The number of the pull request.
+ * @param labels - An array of label names to remove from the pull request.
+ */
 async function removeLabelsFromPr(
     prNumber: number,
     labels: string[],
@@ -166,7 +197,12 @@ async function removeLabelsFromPr(
     });
 }
 
-// API documentation: https://docs.github.com/en/rest/reference/issues#add-labels-to-an-issue
+/**
+ * Adds specified labels to a pull request.
+ * API documentation: https://docs.github.com/en/rest/reference/issues#add-labels-to-an-issue
+ * @param prNumber - The number of the pull request.
+ * @param labels - An array of label names to add to the pull request.
+ */
 export async function addLabelsToPr(
     prNumber: number,
     labels: string[],
@@ -187,6 +223,10 @@ export async function addLabelsToPr(
     );
 }
 
+/**
+ * Cleans up labels on a pull request by removing labels that are no longer necessary.
+ * @param prNumber - The number of the pull request.
+ */
 export async function cleanupLabels(prNumber: number) {
     const availableLabels = await getLabels(prNumber);
     if (availableLabels.length !== 0) {

@@ -16,7 +16,7 @@ export interface IDependencyData {
 }
 
 /**
- * Represents a source object with an ID and dependencies array.
+ * Represents a source object.
  */
 export interface ISource {
     providerId: string;
@@ -25,6 +25,9 @@ export interface ISource {
     dependencies: any[] | null;
 }
 
+/**
+ * Represents a summary object with severity counts.
+ */
 export interface ISummary {
     critical: number | 0;
     high: number | 0;
@@ -32,6 +35,9 @@ export interface ISummary {
     low: number | 0;
 }
 
+/**
+ * Represents an issue related to a dependency.
+ */
 export interface IIssue {
     id: string;
     title: string;
@@ -41,14 +47,23 @@ export interface IIssue {
     remediation: IRemediation;
 }
 
+/**
+ * Represents Common Vulnerability Scoring System (CVSS) details.
+ */
 export interface ICVSS {
     cvss: string;
 }
 
+/**
+ * Represents remediation details for an issue.
+ */
 export interface IRemediation {
     trustedContent: ITrustedContent | null;
 }
 
+/**
+ * Represents trusted content reference for remediation.
+ */
 export interface ITrustedContent {
     ref: string;
 }

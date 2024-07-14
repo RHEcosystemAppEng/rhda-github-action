@@ -11,7 +11,6 @@ import { UTM_SOURCE } from './constants.js';
  * Represents options for image analysis.
  */
 interface IOptions {
-    // RHDA_TOKEN: string;
     RHDA_SOURCE: string;
     EXHORT_SYFT_PATH: string;
     EXHORT_SYFT_CONFIG_PATH: string;
@@ -64,7 +63,6 @@ interface IImageAnalysis {
  */
 class DockerImageAnalysis implements IImageAnalysis {
     options: IOptions = {
-        // 'RHDA_TOKEN': globalConfig.telemetryId,
         RHDA_SOURCE: UTM_SOURCE,
         EXHORT_SYFT_PATH: ghCore.getInput(Inputs.SYFT_EXECUTABLE_PATH),
         EXHORT_SYFT_CONFIG_PATH: ghCore.getInput(Inputs.SYFT_CONFIG_PATH),
@@ -98,6 +96,10 @@ class DockerImageAnalysis implements IImageAnalysis {
      */
     AS_REGEX: RegExp = /\s+AS\s+\S+/gi;
 
+    /**
+     * Constructs a new DockerImageAnalysis instance.
+     * @param filePath - The path to the Dockerfile to analyze.
+     */
     constructor(filePath: string) {
         const lines = this.parseTxtDoc(filePath);
 

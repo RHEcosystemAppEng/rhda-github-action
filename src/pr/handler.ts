@@ -8,15 +8,17 @@ import * as checkout from './checkout.js';
 
 type PullRequest = components['schemas']['pull-request-simple'];
 
+/**
+ * Checks if the current event is a pull request and returns the pull request data if it is.
+ * @returns The pull request data if the event is a pull request, otherwise undefined.
+ */
 async function isPr(): Promise<types.IPrData | undefined> {
-    // check if event is pull request
     const prRawData = github.context.payload.pull_request as PullRequest;
     if (!prRawData) {
         ghCore.info(`No checkout required, item is not a pull request`);
         return;
     }
 
-    // parse PR data
     const pr = parsePrData(prRawData);
     ghCore.debug(`PR number is ${pr.number}`);
     ghCore.info(
@@ -26,17 +28,24 @@ async function isPr(): Promise<types.IPrData | undefined> {
     return pr;
 }
 
+/**
+ * Handles a pull request by creating repository labels, cleaning up existing labels, and checking out the pull request.
+ * @param pr - The pull request data.
+ */
 async function handlePr(pr: types.IPrData): Promise<void> {
-    // create and load pr labels
     await createRepoLabels();
 
-    // remove existing rhda labels before run
     await cleanupLabels(pr.number);
 
-    // checkout pr
     await checkout.checkoutPr(pr.baseRepo.htmlUrl, pr.number);
 }
 
+/**
+ * Parses the pull request data.
+ * @param pr - The raw pull request data from the GitHub API.
+ * @returns The parsed pull request data.
+ * @throws If the owner of the pull request base or head repository cannot be determined.
+ */
 function parsePrData(pr: PullRequest): types.IPrData {
     const baseOwner = pr.base.repo.owner?.login;
     if (!baseOwner) {

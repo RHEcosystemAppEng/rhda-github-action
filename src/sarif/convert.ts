@@ -10,12 +10,22 @@ import { isDefined } from '../utils.js';
 const FROM_REGEX: RegExp = /^\s*FROM\s+(.*)/;
 const ARG_REGEX: RegExp = /^\s*ARG\s+(.*)/;
 
+/**
+ * Resolves the dependency from a given reference.
+ * @param ref - The reference to resolve.
+ * @returns The cleaned dependency reference.
+ */
 export function resolveDependencyFromReference(ref: string): string {
     return ref
         .replace(`pkg:${resolveEcosystemFromReference(ref)}/`, '')
         .split('?')[0];
 }
 
+/**
+ * Resolves the ecosystem from a given reference.
+ * @param ref - The reference to resolve.
+ * @returns The ecosystem name or undefined.
+ */
 export function resolveEcosystemFromReference(ref: string): string | undefined {
     const match = ref.match(/pkg:(.*?)\//);
 
@@ -26,11 +36,22 @@ export function resolveEcosystemFromReference(ref: string): string | undefined {
     return undefined;
 }
 
+/**
+ * Resolves the version from a given reference.
+ * @param ref - The reference to resolve.
+ * @returns The version extracted from the reference.
+ */
 export function resolveVersionFromReference(ref: string): string {
     const resolvedRef = resolveDependencyFromReference(ref);
     return resolvedRef.split('@')[1] || '';
 }
 
+/**
+ * Retrieves manifest data for a given file and ecosystem, substituting arguments with their values and splits manifest into lines.
+ * @param filepath - The path to the manifest file.
+ * @param ecosystem - The ecosystem related to the manifest.
+ * @returns An array of lines from the manifest file.
+ */
 function getManifestDataLines(filepath: string, ecosystem: string): string[] {
     const manifestData = fs.readFileSync(filepath, 'utf-8');
 
@@ -106,6 +127,15 @@ function getManifestDataLines(filepath: string, ecosystem: string): string[] {
     return lines;
 }
 
+/**
+ * Converts RHDA JSON data to SARIF components.
+ * @param rhdaData - The RHDA report JSON data.
+ * @param manifestFilePath - The path to the manifest file.
+ * @param ecosystem - The ecosystem related to the analysis.
+ * @param vulSeverity - The current highest severity level of vulnerabilities.
+ * @param imageRef - Optional image reference (for Docker ecosystem).
+ * @returns SARIF results, rules, and updated vulnerability severity level.
+ */
 function rhdaJsonToSarif(
     rhdaData: any,
     manifestFilePath: string,
@@ -117,10 +147,6 @@ function rhdaJsonToSarif(
     finalRules: sarif.ReportingDescriptor[];
     vulSeverity: constants.VulnerabilitySeverity;
 } {
-    /*
-     * creates results and rules and structures SARIF
-     */
-
     const finalResults: sarif.Result[] = [];
     const finalRules: sarif.ReportingDescriptor[] = [];
     const dependencies: Map<string, types.IDependencyData[]> = new Map<
@@ -363,6 +389,12 @@ function rhdaJsonToSarif(
     };
 }
 
+/**
+ * Creates a SARIF object from final results and rules.
+ * @param finalResults - Array of SARIF results.
+ * @param finalRules - Array of SARIF rules.
+ * @returns SARIF object conforming to the SARIF schema.
+ */
 function createSarifObject(
     finalResults: sarif.Result[],
     finalRules: sarif.ReportingDescriptor[],
@@ -384,15 +416,18 @@ function createSarifObject(
     };
 }
 
+/**
+ * Generates SARIF output from RHDA report JSON data.
+ * @param rhdaReportJson - The RHDA report JSON data.
+ * @param manifestFilePath - The path to the manifest file.
+ * @param ecosystem - The ecosystem related to the analysis.
+ * @returns Promise resolving to an object containing SARIF data and vulnerability severity level.
+ */
 export async function generateSarif(
     rhdaReportJson: any,
     manifestFilePath: string,
     ecosystem: string,
 ): Promise<{ sarifObject: any; vulSeverity: constants.VulnerabilitySeverity }> {
-    /*
-     * creates a SARIF and writes it to file
-     */
-
     let vulSeverity: constants.VulnerabilitySeverity = 'none';
     const finalResults: sarif.Result[] = [];
     const finalRules: sarif.ReportingDescriptor[] = [];

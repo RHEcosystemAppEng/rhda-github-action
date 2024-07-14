@@ -2,6 +2,12 @@ import * as sarif from 'sarif';
 
 import * as types from './types.js';
 
+/**
+ * Converts issue data into a SARIF ReportingDescriptor (rule) object.
+ * @param issueData - The issue data to convert.
+ * @param directRef - The direct reference associated with the issue (dependency or image).
+ * @returns A SARIF ReportingDescriptor (rule) representing the issue.
+ */
 export function fetchIssueRules(
     issueData: types.IIssue,
     directRef: string,
@@ -67,6 +73,11 @@ export function fetchIssueRules(
     return rule;
 }
 
+/**
+ * Converts a recommendation into a SARIF ReportingDescriptor (rule) object.
+ * @param recommendation - The recommendation to convert.
+ * @returns A SARIF ReportingDescriptor (rule) representing the recommendation.
+ */
 export function fetchRecomendationRules(
     recommendation: string,
 ): sarif.ReportingDescriptor {

@@ -6,6 +6,12 @@ import { Inputs, Outputs } from './generated/inputs-outputs.js';
 
 const artifact = new DefaultArtifactClient();
 
+/**
+ * Uploads artifacts to GitHub Actions.
+ * @param artifactName The name of the artifact.
+ * @param files The files to upload as artifacts.
+ * @returns The ID of the uploaded artifact.
+ */
 async function uploadArtifacts(
     artifactName: string,
     files: string[],
@@ -22,6 +28,10 @@ async function uploadArtifacts(
     return uploadedArtifact.id;
 }
 
+/**
+ * Generates artifacts if enabled.
+ * @param files The files to upload as artifacts.
+ */
 export async function generateArtifacts(files: string[]) {
     const uploadArtifact = ghCore.getBooleanInput(Inputs.UPLOAD_ARTIFACT);
     const artifactName = ghCore.getInput(Inputs.ARTIFACT_FILENAME);

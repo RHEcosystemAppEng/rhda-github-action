@@ -6,10 +6,12 @@ import { UTM_SOURCE, DOCKER } from './constants.js';
 import { executeDockerImageAnalysis } from './imageAnalysis.js';
 import * as utils from './utils.js';
 
+/**
+ * Retrieves the configuration options for the stack analysis.
+ * @returns An object containing the configuration options.
+ */
 function getDependencyAnalysisConfig() {
-    // set up configuration options for the stack analysis request
     const options = {
-        // 'RHDA_TOKEN': globalConfig.telemetryId,
         RHDA_SOURCE: UTM_SOURCE,
         MATCH_MANIFEST_VERSIONS: ghCore.getInput(Inputs.MATCH_MANIFEST_VERSION),
         EXHORT_PYTHON_VIRTUAL_ENV: ghCore.getInput(
@@ -33,6 +35,12 @@ function getDependencyAnalysisConfig() {
     return options;
 }
 
+/**
+ * Generates a Red Hat Dependency Analytics (RHDA) report.
+ * @param manifestFilePath - The path to the manifest file.
+ * @param ecosystem - The ecosystem (e.g., 'docker', 'npm', 'maven', etc.).
+ * @returns A promise that resolves to an object containing the RHDA report JSON and file path.
+ */
 export async function generateRHDAReport(
     manifestFilePath: string,
     ecosystem: string,
@@ -49,7 +57,6 @@ export async function generateRHDAReport(
         );
     }
 
-    /* Save RHDA report to file */
     const rhdaReportJsonFilePath: string = `${process.cwd()}/${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`;
     await utils.writeToFile(
         JSON.stringify(rhdaReportJson, null, 4),

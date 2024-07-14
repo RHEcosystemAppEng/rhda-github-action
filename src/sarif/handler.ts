@@ -8,6 +8,18 @@ import * as utils from '../utils.js';
 import { IPrData } from '../pr/types.js';
 import * as constants from '../constants.js';
 
+/**
+ * Handles the conversion of RHDA report JSON to SARIF format, writing it to a file,
+ * setting outputs, and optionally uploading it to GitHub Actions.
+ * @param rhdaReportJson - The RHDA report JSON to convert.
+ * @param manifestFilePath - The path to the manifest file being analyzed.
+ * @param ecosystem - The ecosystem related to the analysis.
+ * @param sha - The SHA of the commit being analyzed.
+ * @param ref - The reference (branch or tag) being analyzed.
+ * @param analysisStartTime - The start time of the analysis.
+ * @param prData - Pull request data if available.
+ * @returns An object containing the path to the generated SARIF file and the vulnerability severity level.
+ */
 export async function handleSarif(
     rhdaReportJson: any,
     manifestFilePath: string,
