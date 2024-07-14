@@ -23,7 +23,7 @@ inputs:
     upload_sarif:
         description: |
             Upload the generated SARIF file, by default it is set to "true".
-            If you don't want to upload SARIF file set this input to "false"
+            If you don't want to upload SARIF file set this input to "false".
         required: false
         default: 'true'
     upload_artifact:
@@ -128,11 +128,11 @@ inputs:
 
 outputs:
     rhda_report_json:
-        description: Generated Red Hat Dependency Analytics Report in JSON format
+        description: Path to generated Red Hat Dependency Analytics Report in JSON format.
     rhda_report_sarif:
-        description: Generated Red Hat Dependency Analytics Report in SARIF format
+        description: Path to generated Red Hat Dependency Analytics Report in SARIF format.
     artifact_id:
-        description: Name of the uploaded artifact
+        description: ID of the uploaded artifact.
 
 runs:
     using: 'node20'

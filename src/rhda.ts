@@ -66,7 +66,7 @@ export async function generateRHDAReport(
     ghCore.info(
         `✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`,
     );
-    ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJson);
+    ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJsonFilePath);
 
     ghCore.info(
         `✅ Successfully generated Red Had Dependency Analytics report`,

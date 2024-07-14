@@ -150,7 +150,7 @@ export enum Inputs {
     UPLOAD_ARTIFACT = "upload_artifact",
     /**
      * Upload the generated SARIF file, by default it is set to "true".
-     * If you don't want to upload SARIF file set this input to "false"
+     * If you don't want to upload SARIF file set this input to "false".
      * Required: false
      * Default: "true"
      */
@@ -177,19 +177,19 @@ export enum Inputs {
 
 export enum Outputs {
     /**
-     * Name of the uploaded artifact
+     * ID of the uploaded artifact.
      * Required: false
      * Default: None.
      */
     ARTIFACT_ID = "artifact_id",
     /**
-     * Generated Red Hat Dependency Analytics Report in JSON format
+     * Path to generated Red Hat Dependency Analytics Report in JSON format.
      * Required: false
      * Default: None.
      */
     RHDA_REPORT_JSON = "rhda_report_json",
     /**
-     * Generated Red Hat Dependency Analytics Report in SARIF format
+     * Path to generated Red Hat Dependency Analytics Report in SARIF format.
      * Required: false
      * Default: None.
      */
