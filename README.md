@@ -1,16 +1,18 @@
 # Red Hat Dependency Analytics (RHDA)
 
-<!-- [![CI Checks](https://github.com/redhat-actions/crda/actions/workflows/ci.yml/badge.svg)](https://github.com/redhat-actions/crda/actions/workflows/ci.yml)
-[![Link checker](https://github.com/redhat-actions/crda/actions/workflows/link_checker.yml/badge.svg)](https://github.com/redhat-actions/crda/actions/workflows/link_checker.yml)
+[![CI Checks](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/ci.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/ci.yaml)
 <br>
 <br>
-[![Scan Golang project](https://github.com/redhat-actions/crda/actions/workflows/scan_go.yml/badge.svg)](https://github.com/redhat-actions/crda/actions/workflows/scan_go.yml)
-[![Scan Java project](https://github.com/redhat-actions/crda/actions/workflows/scan_java.yml/badge.svg)](https://github.com/redhat-actions/crda/actions/workflows/scan_java.yml)
-[![Scan Node projects](https://github.com/redhat-actions/crda/actions/workflows/scan_node.yml/badge.svg)](https://github.com/redhat-actions/crda/actions/workflows/scan_node.yml)
-[![Scan Python project](https://github.com/redhat-actions/crda/actions/workflows/scan_python.yml/badge.svg)](https://github.com/redhat-actions/crda/actions/workflows/scan_python.yml)
+[![Scan Maven project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_maven.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_maven.yaml)
+[![Scan Gradle project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_gradle.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_gradle.yaml)
+[![Scan Npm project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_npm.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_npm.yaml)
+[![Scan Golang project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_go.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_go.yaml)
+[![Scan Python project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_python.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_python.yaml)
+[![Scan Docker project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_docker.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_docker.yaml)
+[![Scan Podman project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_podman.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_podman.yaml)
 <br>
 <br>
-[![tag badge](https://img.shields.io/github/v/tag/redhat-actions/crda)](https://github.com/redhat-actions/crda/tags) -->
+<!-- [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/crda)](https://github.com/redhat-actions/crda/tags) -->
 [![license badge](https://img.shields.io/github/license/RHEcosystemAppEng/rhda-github-action)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/RHEcosystemAppEng/rhda-github-action/dist/index.js)](./dist)
 

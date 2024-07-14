@@ -1,0 +1,61 @@
+name: Scan Docker project
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest" ]
+        # Test once with explicit manifest_file, and once without
+        manifest_file: ["Dockerfile", ""]
+        include:
+          - index: 1
+            manifest_file: "Dockerfile"
+          - index: 2
+            manifest_file: ""
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    name: Analyse Docker project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up JDK 20
+        uses: actions/setup-java@v4
+        with:
+            distribution: 'temurin'
+            java-version: '20'
+
+      - name: Install syft
+        run: |
+            curl -sSfL https://raw.githubusercontent.com/anchore/syft/main/install.sh | sh -s -- -b /usr/local/bin
+
+      - name: Install skopeo
+        run: |
+            sudo apt-get update
+            sudo apt-get install -y skopeo
+
+      - name: RHDA Scan
+        id: rhda_scan
+        uses: RHEcosystemAppEng/rhda-github-action@main
+        with:
+          manifest_directory: manifests/docker
+          manifest_file: ${{ matrix.manifest_file }}
+          artifact_filename: ${{ matrix.os }}${{ matrix.index }}-rhda-report
+          fail_on: never
+
+      - name: Print JSON analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.crda_report_json }}
+        run: cat ${{ steps.rhda_scan.outputs.crda_report_json }}
+
+      - name: Print SARIF analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.crda_report_sarif }}
+        run: cat ${{ steps.rhda_scan.outputs.crda_report_sarif }}
+
+      - name: Print Artifact ID
+        run: echo ${{ steps.rhda_scan.outputs.artifact_id }}

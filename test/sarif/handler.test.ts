@@ -24,7 +24,7 @@ vi.mock('../../src/utils');
 
 describe('handleSarif', () => {
     const sarifObject = { sarif: 'sarif' };
-    const vulSeverity:constants.VulnerabilitySeverity = 'error';
+    const vulSeverity: constants.VulnerabilitySeverity = 'error';
     const rhdaReportJson = { data: 'data' };
     const manifestFilePath = 'path/to/manifest';
     const ecosystem = 'maven';
@@ -48,20 +48,24 @@ describe('handleSarif', () => {
             repo: 'test-repo',
             htmlUrl: 'https://github.com/JohnDoe/test-repo',
         },
-      };
+    };
 
     beforeEach(() => {
         vi.clearAllMocks();
     });
 
     it('should convert RHDA report JSON to SARIF and upload if configured', async () => {
-
-        vi.mocked(convert.generateSarif).mockResolvedValue({ sarifObject, vulSeverity });
+        vi.mocked(convert.generateSarif).mockResolvedValue({
+            sarifObject,
+            vulSeverity,
+        });
         vi.mocked(ghCore.getInput).mockReturnValue(reportFileName);
-        vi.mocked(utils.escapeWindowsPathForActionsOutput).mockReturnValue(escapedPathToReportSarif);
+        vi.mocked(utils.escapeWindowsPathForActionsOutput).mockReturnValue(
+            escapedPathToReportSarif,
+        );
         vi.mocked(ghCore.getBooleanInput).mockReturnValue(true);
         vi.mocked(utils.getGhToken).mockReturnValue('gh-token');
-        process.env.GITHUB_REPOSITORY = 'test-repo'
+        process.env.GITHUB_REPOSITORY = 'test-repo';
 
         const result = await handleSarif(
             rhdaReportJson,
@@ -70,12 +74,22 @@ describe('handleSarif', () => {
             sha,
             ref,
             analysisStartTime,
-            prData
+            prData,
         );
 
-        expect(convert.generateSarif).toHaveBeenCalledWith(rhdaReportJson, manifestFilePath, ecosystem);
-        expect(utils.writeToFile).toHaveBeenCalledWith(JSON.stringify(sarifObject, null, 4), `${process.cwd()}/${reportFileName}.sarif`);
-        expect(ghCore.setOutput).toHaveBeenCalledWith(Outputs.RHDA_REPORT_SARIF, escapedPathToReportSarif);
+        expect(convert.generateSarif).toHaveBeenCalledWith(
+            rhdaReportJson,
+            manifestFilePath,
+            ecosystem,
+        );
+        expect(utils.writeToFile).toHaveBeenCalledWith(
+            JSON.stringify(sarifObject, null, 4),
+            `${process.cwd()}/${reportFileName}.sarif`,
+        );
+        expect(ghCore.setOutput).toHaveBeenCalledWith(
+            Outputs.RHDA_REPORT_SARIF,
+            escapedPathToReportSarif,
+        );
         expect(upload.uploadSarifFile).toHaveBeenCalledWith(
             'gh-token',
             `${process.cwd()}/${reportFileName}.sarif`,
@@ -83,16 +97,23 @@ describe('handleSarif', () => {
             sha,
             ref,
             github.context.repo,
-            true
+            true,
         );
-        expect(result).toEqual({ rhdaReportSarifFilePath: `${process.cwd()}/${reportFileName}.sarif`, vulSeverity });
+        expect(result).toEqual({
+            rhdaReportSarifFilePath: `${process.cwd()}/${reportFileName}.sarif`,
+            vulSeverity,
+        });
     });
 
     it('should skip SARIF upload if not configured', async () => {
-
-        vi.mocked(convert.generateSarif).mockResolvedValue({ sarifObject, vulSeverity });
+        vi.mocked(convert.generateSarif).mockResolvedValue({
+            sarifObject,
+            vulSeverity,
+        });
         vi.mocked(ghCore.getInput).mockReturnValue(reportFileName);
-        vi.mocked(utils.escapeWindowsPathForActionsOutput).mockReturnValue(escapedPathToReportSarif);
+        vi.mocked(utils.escapeWindowsPathForActionsOutput).mockReturnValue(
+            escapedPathToReportSarif,
+        );
         vi.mocked(ghCore.getBooleanInput).mockReturnValue(false);
 
         const result = await handleSarif(
@@ -102,11 +123,13 @@ describe('handleSarif', () => {
             sha,
             ref,
             analysisStartTime,
-            prData
+            prData,
         );
 
         expect(upload.uploadSarifFile).not.toHaveBeenCalled();
-        expect(result).toEqual({ rhdaReportSarifFilePath: `${process.cwd()}/${reportFileName}.sarif`, vulSeverity });
+        expect(result).toEqual({
+            rhdaReportSarifFilePath: `${process.cwd()}/${reportFileName}.sarif`,
+            vulSeverity,
+        });
     });
 });
-

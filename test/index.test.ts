@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest';
+import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as ghCore from '@actions/core';
 
 import * as utils from '../src/utils';
@@ -53,13 +53,13 @@ vi.mock('../src/artifactHandler', () => ({
     generateArtifacts: vi.fn(),
 }));
 
-vi.mock("../src/pr/labels", async (importOriginal) => {
-    const actual: any = await importOriginal()
+vi.mock('../src/pr/labels', async (importOriginal) => {
+    const actual: any = await importOriginal();
     return {
-      ...actual,
-      addLabelsToPr: vi.fn(),
-    }
-  })
+        ...actual,
+        addLabelsToPr: vi.fn(),
+    };
+});
 
 describe('run', () => {
     const mockOS = 'linux';
@@ -76,14 +76,14 @@ describe('run', () => {
         sha: 'pr-abcdef123456',
         ref: 'pr-refs/heads/main',
         headRepo: {
-          owner: 'JohnDoe',
-          repo: 'test-repo',
-          htmlUrl: 'https://github.com/JohnDoe/test-repo',
+            owner: 'JohnDoe',
+            repo: 'test-repo',
+            htmlUrl: 'https://github.com/JohnDoe/test-repo',
         },
         baseRepo: {
-          owner: 'baseOwner',
-          repo: 'base-repo',
-          htmlUrl: 'https://github.com/baseOwner/base-repo',
+            owner: 'baseOwner',
+            repo: 'base-repo',
+            htmlUrl: 'https://github.com/baseOwner/base-repo',
         },
     };
 
@@ -111,23 +111,42 @@ describe('run', () => {
             vulSeverity: severity,
         });
         vi.mocked(utils.getOS).mockReturnValue(mockOS);
-        
+
         await run();
 
-        expect(ghCore.info).toHaveBeenCalledWith(`ℹ️ Working directory is ${process.cwd()}`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Working directory is ${process.cwd()}`,
+        );
         expect(utils.getOS).toHaveBeenCalled();
         expect(isPr).toHaveBeenCalled();
         expect(getOriginalCheckoutBranch).not.toHaveBeenCalled();
         expect(utils.getCommitSha).toHaveBeenCalled();
         expect(utils.getEnvVar).toHaveBeenCalledWith('GITHUB_REF');
-        expect(ghCore.info).toHaveBeenCalledWith(`ℹ️ Ref to analyze is "${refMock}"`);
-        expect(ghCore.info).toHaveBeenCalledWith(`ℹ️ Commit to analyze is "${shaMock}"`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Ref to analyze is "${refMock}"`,
+        );
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Commit to analyze is "${shaMock}"`,
+        );
         expect(resolveManifestFilePath).toHaveBeenCalled();
-        expect(generateRHDAReport).toHaveBeenCalledWith(manifestFilePath, ecosystem);
-        expect(handleSarif).toHaveBeenCalledWith(reportData, manifestFilePath, ecosystem, shaMock, refMock, expect.anything(), undefined);
+        expect(generateRHDAReport).toHaveBeenCalledWith(
+            manifestFilePath,
+            ecosystem,
+        );
+        expect(handleSarif).toHaveBeenCalledWith(
+            reportData,
+            manifestFilePath,
+            ecosystem,
+            shaMock,
+            refMock,
+            expect.anything(),
+            undefined,
+        );
         expect(generateArtifacts).toHaveBeenCalled();
         expect(addLabelsToPr).not.toHaveBeenCalled();
-        expect(ghCore.info).toHaveBeenCalledWith(`✅ No vulnerabilities were found`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `✅ No vulnerabilities were found`,
+        );
         expect(ghCore.setFailed).not.toHaveBeenCalledWith();
     });
 
@@ -144,8 +163,12 @@ describe('run', () => {
 
         await run();
 
-        expect(ghCore.info).toHaveBeenCalledWith(`Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one error was found. Failing workflow.`);
-        expect(ghCore.setFailed).toHaveBeenCalledWith(`Found high severity vulnerabilities in the project.`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one error was found. Failing workflow.`,
+        );
+        expect(ghCore.setFailed).toHaveBeenCalledWith(
+            `Found high severity vulnerabilities in the project.`,
+        );
     });
 
     it('should run successfully without PR data and with HIGH and CRITICAL severity vulnerabilities, fail on warning', async () => {
@@ -161,8 +184,12 @@ describe('run', () => {
 
         await run();
 
-        expect(ghCore.info).toHaveBeenCalledWith(`Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one warning was found. Failing workflow.`);
-        expect(ghCore.setFailed).toHaveBeenCalledWith(`Found vulnerabilities in the project.`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one warning was found. Failing workflow.`,
+        );
+        expect(ghCore.setFailed).toHaveBeenCalledWith(
+            `Found vulnerabilities in the project.`,
+        );
     });
 
     it('should run successfully without PR data and with LOW and MEDIUM severity vulnerabilities, fail on error', async () => {
@@ -194,8 +221,12 @@ describe('run', () => {
 
         await run();
 
-        expect(ghCore.info).toHaveBeenCalledWith(`Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one warning was found. Failing workflow.`);
-        expect(ghCore.setFailed).toHaveBeenCalledWith(`Found vulnerabilities in the project.`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Input "${Inputs.FAIL_ON}" is "${failOn}", and at least one warning was found. Failing workflow.`,
+        );
+        expect(ghCore.setFailed).toHaveBeenCalledWith(
+            `Found vulnerabilities in the project.`,
+        );
     });
 
     it('should run successfully without PR data and with vulnerabilities, fail on never', async () => {
@@ -211,14 +242,18 @@ describe('run', () => {
 
         await run();
 
-        expect(ghCore.warning).toHaveBeenCalledWith(`Found "${severity}" level vulnerabilities`);
-        expect(ghCore.info).toHaveBeenCalledWith(`Input "${Inputs.FAIL_ON}" is "${failOn}". Not failing workflow.`);
+        expect(ghCore.warning).toHaveBeenCalledWith(
+            `Found "${severity}" level vulnerabilities`,
+        );
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Input "${Inputs.FAIL_ON}" is "${failOn}". Not failing workflow.`,
+        );
         expect(ghCore.setFailed).not.toHaveBeenCalled();
     });
 
     it('should run successfully with PR data and with no vulnerabilitues', async () => {
         const severity = 'none';
-        
+
         vi.mocked(handleSarif).mockResolvedValue({
             rhdaReportSarifFilePath: sarifFilePath,
             vulSeverity: severity,
@@ -228,21 +263,42 @@ describe('run', () => {
 
         await run();
 
-        expect(ghCore.info).toHaveBeenCalledWith(`ℹ️ Working directory is ${process.cwd()}`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Working directory is ${process.cwd()}`,
+        );
         expect(utils.getOS).toHaveBeenCalled();
         expect(isPr).toHaveBeenCalled();
         expect(getOriginalCheckoutBranch).toHaveBeenCalled();
         expect(handlePr).toHaveBeenCalledWith(prData);
         expect(utils.getCommitSha).not.toHaveBeenCalled();
         expect(utils.getEnvVar).not.toHaveBeenCalledWith('GITHUB_REF');
-        expect(ghCore.info).toHaveBeenCalledWith(`ℹ️ Ref to analyze is "${prData.ref}"`);
-        expect(ghCore.info).toHaveBeenCalledWith(`ℹ️ Commit to analyze is "${prData.sha}"`);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Ref to analyze is "${prData.ref}"`,
+        );
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Commit to analyze is "${prData.sha}"`,
+        );
         expect(resolveManifestFilePath).toHaveBeenCalled();
-        expect(generateRHDAReport).toHaveBeenCalledWith(manifestFilePath, ecosystem);
-        expect(handleSarif).toHaveBeenCalledWith(reportData, manifestFilePath, ecosystem, prData.sha, prData.ref, expect.anything(), prData);
+        expect(generateRHDAReport).toHaveBeenCalledWith(
+            manifestFilePath,
+            ecosystem,
+        );
+        expect(handleSarif).toHaveBeenCalledWith(
+            reportData,
+            manifestFilePath,
+            ecosystem,
+            prData.sha,
+            prData.ref,
+            expect.anything(),
+            prData,
+        );
         expect(generateArtifacts).toHaveBeenCalled();
-        expect(addLabelsToPr).toHaveBeenCalledWith(prData.number, [RhdaLabels.RHDA_SCAN_PASSED]);
-        expect(ghCore.info).toHaveBeenCalledWith(`✅ No vulnerabilities were found`);
+        expect(addLabelsToPr).toHaveBeenCalledWith(prData.number, [
+            RhdaLabels.RHDA_SCAN_PASSED,
+        ]);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `✅ No vulnerabilities were found`,
+        );
         expect(ghCore.setFailed).not.toHaveBeenCalledWith();
     });
 
@@ -258,7 +314,9 @@ describe('run', () => {
 
         await run();
 
-        expect(addLabelsToPr).toHaveBeenCalledWith(prData.number, [RhdaLabels.RHDA_FOUND_ERROR]);
+        expect(addLabelsToPr).toHaveBeenCalledWith(prData.number, [
+            RhdaLabels.RHDA_FOUND_ERROR,
+        ]);
     });
 
     it('should run successfully with PR data and with LOW and MEDIUM severity vulnerabilitues', async () => {
@@ -273,6 +331,8 @@ describe('run', () => {
 
         await run();
 
-        expect(addLabelsToPr).toHaveBeenCalledWith(prData.number, [RhdaLabels.RHDA_FOUND_WARNING]);
+        expect(addLabelsToPr).toHaveBeenCalledWith(prData.number, [
+            RhdaLabels.RHDA_FOUND_WARNING,
+        ]);
     });
 });

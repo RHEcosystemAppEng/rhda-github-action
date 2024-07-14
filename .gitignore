@@ -6,3 +6,6 @@
 
 # test coverage directories
 coverage/
+
+# Ignore dependency caches
+**/.gradle

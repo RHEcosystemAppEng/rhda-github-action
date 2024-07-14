@@ -1,11 +1,13 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import * as sarif from 'sarif';
 
-import { fetchIssueRules, fetchRecomendationRules } from '../../src/sarif/rules'
+import {
+    fetchIssueRules,
+    fetchRecomendationRules,
+} from '../../src/sarif/rules';
 import * as types from '../../src/sarif/types';
 
 describe('fetchIssueRules', () => {
-    
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -17,7 +19,7 @@ describe('fetchIssueRules', () => {
             title: 'Test Vulnerability',
             cves: ['CVE-1234'],
             cvss: { cvss: '5.0' },
-            remediation: {trustedContent: null}
+            remediation: { trustedContent: null },
         };
         const directRef = 'directRef';
 
@@ -52,7 +54,7 @@ describe('fetchIssueRules', () => {
             title: 'High Vulnerability',
             cves: ['CVE-5678'],
             cvss: { cvss: '9.8' },
-            remediation: {trustedContent: null}
+            remediation: { trustedContent: null },
         };
         const directRef = 'directRef';
 
@@ -86,8 +88,8 @@ describe('fetchIssueRules', () => {
             severity: 'MEDIUM',
             title: 'Medium Vulnerability',
             cves: null,
-            cvss: {cvss: '9.8'},
-            remediation: {trustedContent: null}
+            cvss: { cvss: '9.8' },
+            remediation: { trustedContent: null },
         };
         const directRef = 'directRef';
 
@@ -119,7 +121,7 @@ describe('fetchIssueRules', () => {
             title: 'Medium Vulnerability',
             cves: ['CVE-5678'],
             cvss: null,
-            remediation: {trustedContent: null}
+            remediation: { trustedContent: null },
         };
         const directRef = 'directRef';
 
@@ -154,7 +156,7 @@ describe('fetchIssueRules', () => {
             title: 'Medium Vulnerability',
             cves: null,
             cvss: null,
-            remediation: {trustedContent: null}
+            remediation: { trustedContent: null },
         };
         const directRef = 'directRef';
 
@@ -179,7 +181,8 @@ describe('fetchIssueRules', () => {
 
 describe('fetchRecomendationRules', () => {
     it('should return correct SARIF rule for a recommendation', () => {
-        const recommendation = 'pkg:ecosystem/groupId/artifact@recommendedversion';
+        const recommendation =
+            'pkg:ecosystem/groupId/artifact@recommendedversion';
 
         const expectedRule: sarif.ReportingDescriptor = {
             id: 'pkg:ecosystem/groupId/artifact@recommendedversion',

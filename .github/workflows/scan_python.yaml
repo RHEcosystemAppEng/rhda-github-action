@@ -1,0 +1,54 @@
+name: Scan Python project
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+        # Test once with explicit manifest_file, and once without
+        manifest_file: ["requirements.txt", ""]
+        include:
+          - index: 1
+            manifest_file: "requirements.txt"
+          - index: 2
+            manifest_file: ""
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    name: Analyse Python project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Install dependencies
+        run: pip install -r manifests/python/requirements.txt
+
+      - name: RHDA Scan
+        id: rhda_scan
+        uses: RHEcosystemAppEng/rhda-github-action@main
+        with:
+          manifest_directory: manifests/python
+          manifest_file: ${{ matrix.manifest_file }}
+          artifact_filename: ${{ matrix.os }}${{ matrix.index }}-rhda-report
+          fail_on: never
+
+      - name: Print JSON analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.crda_report_json }}
+        run: cat ${{ steps.rhda_scan.outputs.crda_report_json }}
+
+      - name: Print SARIF analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.crda_report_sarif }}
+        run: cat ${{ steps.rhda_scan.outputs.crda_report_sarif }}
+
+      - name: Print Artifact ID
+        run: echo ${{ steps.rhda_scan.outputs.artifact_id }}

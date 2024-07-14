@@ -15,7 +15,6 @@ vi.mock('../../src/utils', () => ({
 }));
 
 describe('getOriginalCheckoutBranch', () => {
-    
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -25,12 +24,15 @@ describe('getOriginalCheckoutBranch', () => {
         vi.mocked(utils.execCommand).mockResolvedValueOnce({
             stdout: `${mockBranchName}\n`,
             exitCode: 0,
-            stderr: ''
+            stderr: '',
         });
-    
+
         const branch = await checkout.getOriginalCheckoutBranch();
-    
-        expect(utils.execCommand).toHaveBeenCalledWith('git', ['branch', '--show-current']);
+
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'branch',
+            '--show-current',
+        ]);
         expect(branch).toBe(mockBranchName);
     });
 });
@@ -46,25 +48,29 @@ describe('checkoutPr', () => {
     it('should checkout the PR branch', async () => {
         const remoteName = `remote-${prNumber}`;
         const localBranchName = `pr-${prNumber}`;
-        
-        await checkout.checkoutPr(baseRepoUrl, prNumber);
-    
-        expect(utils.execCommand).toHaveBeenCalledWith('git', [
-          'remote',
-          'add',
-          remoteName,
-          baseRepoUrl,
-        ]);
-        expect(ghCore.info).toHaveBeenCalledWith(`⬇️ Checking out PR #${prNumber} to run RHDA analysis.`);
-        expect(utils.execCommand).toHaveBeenCalledWith('git', [
-          'fetch',
-          remoteName,
-          `pull/${prNumber}/head:${localBranchName}`,
-        ]);
-        expect(utils.execCommand).toHaveBeenCalledWith('git', ['checkout', localBranchName]);
-      });
-});
 
+        await checkout.checkoutPr(baseRepoUrl, prNumber);
+
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'remote',
+            'add',
+            remoteName,
+            baseRepoUrl,
+        ]);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `⬇️ Checking out PR #${prNumber} to run RHDA analysis.`,
+        );
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'fetch',
+            remoteName,
+            `pull/${prNumber}/head:${localBranchName}`,
+        ]);
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'checkout',
+            localBranchName,
+        ]);
+    });
+});
 
 describe('checkoutCleanup', () => {
     const prNumber = 123;
@@ -80,11 +86,28 @@ describe('checkoutCleanup', () => {
 
         await checkout.checkoutCleanup(prNumber, originalCheckoutBranch);
 
-        expect(ghCore.info).toHaveBeenCalledWith(`Checking out back to ${originalCheckoutBranch} branch.`);
-        expect(utils.execCommand).toHaveBeenCalledWith('git', ['checkout', originalCheckoutBranch]);
-        expect(ghCore.info).toHaveBeenCalledWith(`Removing the created remote "${remoteName}"`);
-        expect(utils.execCommand).toHaveBeenCalledWith('git', ['remote', 'remove', remoteName]);
-        expect(ghCore.info).toHaveBeenCalledWith(`Removing created branch "${branchName}"`);
-        expect(utils.execCommand).toHaveBeenCalledWith('git', ['branch', '-D', branchName]);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Checking out back to ${originalCheckoutBranch} branch.`,
+        );
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'checkout',
+            originalCheckoutBranch,
+        ]);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Removing the created remote "${remoteName}"`,
+        );
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'remote',
+            'remove',
+            remoteName,
+        ]);
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `Removing created branch "${branchName}"`,
+        );
+        expect(utils.execCommand).toHaveBeenCalledWith('git', [
+            'branch',
+            '-D',
+            branchName,
+        ]);
     });
 });

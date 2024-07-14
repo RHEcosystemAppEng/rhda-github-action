@@ -7,7 +7,6 @@ import * as zlib from 'zlib';
 import * as utils from '../src/utils';
 import { Inputs } from '../src/generated/inputs-outputs.js';
 
-
 vi.mock('@actions/core', () => ({
     warning: vi.fn(),
     getInput: vi.fn(),
@@ -15,7 +14,6 @@ vi.mock('@actions/core', () => ({
 }));
 
 describe('getOS', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -54,13 +52,13 @@ describe('getOS', () => {
         mockPlatform('android');
         const os = utils.getOS();
         expect(os).toBe('linux');
-        expect(ghCore.warning).toHaveBeenCalledWith('Unrecognized OS "android"');
+        expect(ghCore.warning).toHaveBeenCalledWith(
+            'Unrecognized OS "android"',
+        );
     });
 });
 
-
 describe('getGhToken', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -89,7 +87,6 @@ describe('getGhToken', () => {
 });
 
 describe('getGitExecutable', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -104,12 +101,12 @@ describe('getGitExecutable', () => {
     });
 
     it('should return "git.exe" on Windows', async () => {
-        utils.setCurrentOS('windows')
+        utils.setCurrentOS('windows');
         expect(utils.getGitExecutable()).toBe('git.exe');
     });
 
     it('should return "git" on other OS', async () => {
-        utils.setCurrentOS('linux')
+        utils.setCurrentOS('linux');
         expect(utils.getGitExecutable()).toBe('git');
     });
 });
@@ -131,14 +128,14 @@ describe('getEnvVar', () => {
 
     it('should throw an error if the environment variable is not set', () => {
         expect(() => utils.getEnvVar('UNSET_VAR')).toThrow(
-            '❌ UNSET_VAR environment variable must be set'
+            '❌ UNSET_VAR environment variable must be set',
         );
     });
 
     it('should throw an error if the environment variable is an empty string', () => {
         process.env.EMPTY_VAR = '';
         expect(() => utils.getEnvVar('EMPTY_VAR')).toThrow(
-            '❌ EMPTY_VAR environment variable must be set'
+            '❌ EMPTY_VAR environment variable must be set',
         );
     });
 });
@@ -149,7 +146,6 @@ vi.mock('fs', () => ({
 }));
 
 describe('writeToFile', () => {
-    
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -165,7 +161,6 @@ describe('writeToFile', () => {
 });
 
 describe('escapeWindowsPathForActionsOutput', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -203,7 +198,6 @@ vi.mock('zlib', () => ({
 }));
 
 describe('zipFile', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -227,7 +221,6 @@ describe('zipFile', () => {
 });
 
 describe('isDefined', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -238,9 +231,9 @@ describe('isDefined', () => {
                 b: {
                     c: 10,
                 },
-            },    
+            },
         };
-        expect(utils.isDefined(obj, 'a', 'b', 'c')).to.be.true;
+        expect(utils.isDefined(obj, 'a', 'b', 'c')).toEqual(true);
     });
 
     it('should return true when all keys are defined in the object (without key requests)', () => {
@@ -249,9 +242,9 @@ describe('isDefined', () => {
                 b: {
                     c: 10,
                 },
-            },    
+            },
         };
-        expect(utils.isDefined(obj)).to.be.true;
+        expect(utils.isDefined(obj)).toEqual(true);
     });
 
     it('should return false if any key is not defined in the object', () => {
@@ -260,32 +253,32 @@ describe('isDefined', () => {
                 b: {
                     c: 10,
                 },
-            },    
+            },
         };
-        expect(utils.isDefined(obj, 'a', 'b', 'd')).to.be.false;
+        expect(utils.isDefined(obj, 'a', 'b', 'd')).toEqual(false);
     });
 
     it('should return false if the object itself is not defined', () => {
         const obj = null;
-        expect(utils.isDefined(obj, 'a', 'b', 'c')).to.be.false;
+        expect(utils.isDefined(obj, 'a', 'b', 'c')).toEqual(false);
     });
 
     it('should return false if any intermediate key in the object chain is not defined', () => {
         const obj = {
             a: {
-                b: null
-            },    
+                b: null,
+            },
         };
-        expect(utils.isDefined(obj, 'a', 'b', 'c')).to.be.false;
+        expect(utils.isDefined(obj, 'a', 'b', 'c')).toEqual(false);
     });
 
     it('should return false if any intermediate key in the object chain is undefined', () => {
         const obj = {
             a: {
-                b: undefined
-            },    
+                b: undefined,
+            },
         };
-        expect(utils.isDefined(obj, 'a', 'b', 'c')).to.be.false;
+        expect(utils.isDefined(obj, 'a', 'b', 'c')).toEqual(false);
     });
 });
 
@@ -294,7 +287,6 @@ vi.mock('@actions/exec', () => ({
 }));
 
 describe('execCommand', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -308,14 +300,22 @@ describe('execCommand', () => {
         const mockStdout = 'hello\n';
         const mockStderr = '';
         vi.mocked(ghExec.exec).mockImplementation(
-            (commandLine: string, args?: string[] | undefined, options?: ghExec.ExecOptions | undefined) => {
+            (
+                commandLine: string,
+                args?: string[] | undefined,
+                options?: ghExec.ExecOptions | undefined,
+            ) => {
                 options?.listeners?.stdout!(Buffer.from(mockStdout));
                 options?.listeners?.stderr!(Buffer.from(mockStderr));
                 return Promise.resolve(mockExitCode);
-            }
+            },
         );
 
-        const result = await utils.execCommand(mockExecutable, mockArgs, mockOptions);
+        const result = await utils.execCommand(
+            mockExecutable,
+            mockArgs,
+            mockOptions,
+        );
 
         expect(result).toEqual({
             exitCode: mockExitCode,
@@ -326,20 +326,23 @@ describe('execCommand', () => {
 });
 
 describe('getCommitSha', () => {
-
     it('should return the commit SHA', async () => {
         const mockSha = 'abc123';
         const mockExitCode = 0;
         const mockStdout = `${mockSha}\n`;
         const mockStderr = '';
         vi.mocked(ghExec.exec).mockImplementation(
-            (commandLine: string, args?: string[] | undefined, options?: ghExec.ExecOptions | undefined) => {
+            (
+                commandLine: string,
+                args?: string[] | undefined,
+                options?: ghExec.ExecOptions | undefined,
+            ) => {
                 options?.listeners?.stdout!(Buffer.from(mockStdout));
                 options?.listeners?.stderr!(Buffer.from(mockStderr));
                 return Promise.resolve(mockExitCode);
-            }
+            },
         );
-        
+
         const result = await utils.getCommitSha();
 
         expect(result).toBe(mockSha);

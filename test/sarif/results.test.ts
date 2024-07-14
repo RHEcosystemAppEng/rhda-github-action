@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 
-import { rhdaToResult } from '../../src/sarif/results'
+import { rhdaToResult } from '../../src/sarif/results';
 import * as types from '../../src/sarif/types';
 import { resolveVersionFromReference } from '../../src/sarif/convert.js';
 
@@ -17,8 +17,12 @@ describe('rhdaToResult', () => {
         severity: 'MEDIUM',
         title: 'Medium Vulnerability',
         cves: ['CVE-5678'],
-        cvss: {cvss: '9.8'},
-        remediation: {trustedContent: {ref: 'pkg:ecosystem/groupId/artifact@remediationversion'}}
+        cvss: { cvss: '9.8' },
+        remediation: {
+            trustedContent: {
+                ref: 'pkg:ecosystem/groupId/artifact@remediationversion',
+            },
+        },
     };
 
     beforeEach(() => {
@@ -28,7 +32,7 @@ describe('rhdaToResult', () => {
     it('should return correct SARIF result for a dependency with issues', () => {
         const refHasIssues = true;
 
-        const TransitiveDependencyData: types.IDependencyData = {
+        const transitiveDependencyData: types.IDependencyData = {
             imageRef: '',
             depRef: 'pkg:ecosystem/groupId1/artifact1@version1',
             depGroup: 'groupId1',
@@ -37,9 +41,10 @@ describe('rhdaToResult', () => {
             ecosystem: 'ecosystem',
             providerId: 'providerId',
             sourceId: 'sourceId',
-            issues:  [issueData],
+            issues: [issueData],
             transitives: null,
-            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+            recommendationRef:
+                'pkg:ecosystem/groupId/artifact@recommendedversion',
         };
 
         const dependencyData: types.IDependencyData = {
@@ -51,70 +56,80 @@ describe('rhdaToResult', () => {
             ecosystem: 'ecosystem',
             providerId: 'providerId',
             sourceId: 'sourceId',
-            issues:  [issueData],
-            transitives: [TransitiveDependencyData],
-            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+            issues: [issueData],
+            transitives: [transitiveDependencyData],
+            recommendationRef:
+                'pkg:ecosystem/groupId/artifact@recommendedversion',
         };
-        
+
         const expectedResult = [
-            [{
-                "ruleId":issueData.id,
-                "message":{
-                    "text":`This line introduces a "${issueData.title}" vulnerability with ` +
-                    `${issueData.severity} severity.\n` +
-                    `Vulnerability data provider is ${dependencyData.providerId}.\n` +
-                    `Vulnerability data source is ${dependencyData.sourceId}.\n` +
-                    `Vulnerable dependency is ${dependencyData.depGroup}/${dependencyData.depName} version ${dependencyData.depVersion}.\n` +
-                    `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`
-                },
-                "locations":[
-                    {
-                        "physicalLocation":{
-                            "artifactLocation":{
-                                "uri":manifestFilePath
+            [
+                {
+                    ruleId: issueData.id,
+                    message: {
+                        text:
+                            `This line introduces a "${issueData.title}" vulnerability with ` +
+                            `${issueData.severity} severity.\n` +
+                            `Vulnerability data provider is ${dependencyData.providerId}.\n` +
+                            `Vulnerability data source is ${dependencyData.sourceId}.\n` +
+                            `Vulnerable dependency is ${dependencyData.depGroup}/${dependencyData.depName} version ${dependencyData.depVersion}.\n` +
+                            `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`,
+                    },
+                    locations: [
+                        {
+                            physicalLocation: {
+                                artifactLocation: {
+                                    uri: manifestFilePath,
+                                },
+                                region: {
+                                    startLine: startLine,
+                                },
                             },
-                            "region":{
-                                "startLine":startLine
-                            }
-                        }
-                    }
-                ]
-            },
-            {
-                "ruleId":issueData.id,
-                "message":{
-                    "text":`This line introduces a "${issueData.title}" vulnerability with ` +
-                    `${issueData.severity} severity.\n` +
-                    `Vulnerability data provider is ${TransitiveDependencyData.providerId}.\n` +
-                    `Vulnerability data source is ${TransitiveDependencyData.sourceId}.\n` +
-                    `Vulnerable transitive dependency is ${TransitiveDependencyData.depGroup}/${TransitiveDependencyData.depName} version ${TransitiveDependencyData.depVersion}.\n` +
-                    `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`
+                        },
+                    ],
                 },
-                "locations":[
-                    {
-                        "physicalLocation":{
-                            "artifactLocation":{
-                                "uri":manifestFilePath
+                {
+                    ruleId: issueData.id,
+                    message: {
+                        text:
+                            `This line introduces a "${issueData.title}" vulnerability with ` +
+                            `${issueData.severity} severity.\n` +
+                            `Vulnerability data provider is ${transitiveDependencyData.providerId}.\n` +
+                            `Vulnerability data source is ${transitiveDependencyData.sourceId}.\n` +
+                            `Vulnerable transitive dependency is ${transitiveDependencyData.depGroup}/${transitiveDependencyData.depName} version ${transitiveDependencyData.depVersion}.\n` +
+                            `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`,
+                    },
+                    locations: [
+                        {
+                            physicalLocation: {
+                                artifactLocation: {
+                                    uri: manifestFilePath,
+                                },
+                                region: {
+                                    startLine: startLine,
+                                },
                             },
-                            "region":{
-                                "startLine":startLine
-                            }
-                        }
-                    }
-                ]
-            }],
-            ['example rule', 'example rule']
-        ]
+                        },
+                    ],
+                },
+            ],
+            ['example rule', 'example rule'],
+        ];
 
-        const results = rhdaToResult(dependencyData, manifestFilePath, startLine, refHasIssues)
+        const results = rhdaToResult(
+            dependencyData,
+            manifestFilePath,
+            startLine,
+            refHasIssues,
+        );
 
-        expect(results).toStrictEqual(expectedResult)
+        expect(results).toStrictEqual(expectedResult);
     });
 
     it('should return correct SARIF result for a image dependency with issues', () => {
         const refHasIssues = true;
 
-        const TransitiveDependencyData: types.IDependencyData = {
+        const transitiveDependencyData: types.IDependencyData = {
             imageRef: 'image:tag',
             depRef: 'pkg:ecosystem/artifact1',
             depGroup: '',
@@ -123,9 +138,10 @@ describe('rhdaToResult', () => {
             ecosystem: 'ecosystem',
             providerId: 'providerId',
             sourceId: 'sourceId',
-            issues:  [issueData],
+            issues: [issueData],
             transitives: null,
-            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+            recommendationRef:
+                'pkg:ecosystem/groupId/artifact@recommendedversion',
         };
 
         const dependencyData: types.IDependencyData = {
@@ -137,64 +153,74 @@ describe('rhdaToResult', () => {
             ecosystem: 'ecosystem',
             providerId: 'providerId',
             sourceId: 'sourceId',
-            issues:  [issueData],
-            transitives: [TransitiveDependencyData],
-            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+            issues: [issueData],
+            transitives: [transitiveDependencyData],
+            recommendationRef:
+                'pkg:ecosystem/groupId/artifact@recommendedversion',
         };
-        
+
         const expectedResult = [
-            [{
-                "ruleId":issueData.id,
-                "message":{
-                    "text":`This line introduces a "${issueData.title}" vulnerability with ` +
-                    `${issueData.severity} severity.\n` +
-                    `Vulnerability data provider is ${dependencyData.providerId}.\n` +
-                    `Vulnerability data source is ${dependencyData.sourceId}.\n` +
-                    `Vulnerable dependency is ${dependencyData.depGroup}/${dependencyData.depName} version ${dependencyData.depVersion}.\n` +
-                    `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`
-                },
-                "locations":[
-                    {
-                        "physicalLocation":{
-                            "artifactLocation":{
-                                "uri":manifestFilePath
+            [
+                {
+                    ruleId: issueData.id,
+                    message: {
+                        text:
+                            `This line introduces a "${issueData.title}" vulnerability with ` +
+                            `${issueData.severity} severity.\n` +
+                            `Vulnerability data provider is ${dependencyData.providerId}.\n` +
+                            `Vulnerability data source is ${dependencyData.sourceId}.\n` +
+                            `Vulnerable dependency is ${dependencyData.depGroup}/${dependencyData.depName} version ${dependencyData.depVersion}.\n` +
+                            `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`,
+                    },
+                    locations: [
+                        {
+                            physicalLocation: {
+                                artifactLocation: {
+                                    uri: manifestFilePath,
+                                },
+                                region: {
+                                    startLine: startLine,
+                                },
                             },
-                            "region":{
-                                "startLine":startLine
-                            }
-                        }
-                    }
-                ]
-            },
-            {
-                "ruleId":issueData.id,
-                "message":{
-                    "text":`This line introduces a "${issueData.title}" vulnerability with ` +
-                    `${issueData.severity} severity.\n` +
-                    `Vulnerability data provider is ${TransitiveDependencyData.providerId}.\n` +
-                    `Vulnerability data source is ${TransitiveDependencyData.sourceId}.\n` +
-                    `Vulnerable transitive dependency is ${TransitiveDependencyData.depName}.\n` +
-                    `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`
+                        },
+                    ],
                 },
-                "locations":[
-                    {
-                        "physicalLocation":{
-                            "artifactLocation":{
-                                "uri":manifestFilePath
+                {
+                    ruleId: issueData.id,
+                    message: {
+                        text:
+                            `This line introduces a "${issueData.title}" vulnerability with ` +
+                            `${issueData.severity} severity.\n` +
+                            `Vulnerability data provider is ${transitiveDependencyData.providerId}.\n` +
+                            `Vulnerability data source is ${transitiveDependencyData.sourceId}.\n` +
+                            `Vulnerable transitive dependency is ${transitiveDependencyData.depName}.\n` +
+                            `Recommended remediation version: ${resolveVersionFromReference(issueData.remediation.trustedContent ? issueData.remediation.trustedContent.ref : '')}`,
+                    },
+                    locations: [
+                        {
+                            physicalLocation: {
+                                artifactLocation: {
+                                    uri: manifestFilePath,
+                                },
+                                region: {
+                                    startLine: startLine,
+                                },
                             },
-                            "region":{
-                                "startLine":startLine
-                            }
-                        }
-                    }
-                ]
-            }],
-            ['example rule', 'example rule']
-        ]
+                        },
+                    ],
+                },
+            ],
+            ['example rule', 'example rule'],
+        ];
 
-        const results = rhdaToResult(dependencyData, manifestFilePath, startLine, refHasIssues)
+        const results = rhdaToResult(
+            dependencyData,
+            manifestFilePath,
+            startLine,
+            refHasIssues,
+        );
 
-        expect(results).toStrictEqual(expectedResult)
+        expect(results).toStrictEqual(expectedResult);
     });
 
     it('should return correct SARIF result for a dependency without issues and with recommendation', () => {
@@ -209,35 +235,43 @@ describe('rhdaToResult', () => {
             ecosystem: 'ecosystem',
             providerId: 'providerId',
             sourceId: 'sourceId',
-            issues:  null,
+            issues: null,
             transitives: null,
-            recommendationRef: 'pkg:ecosystem/groupId/artifact@recommendedversion'
+            recommendationRef:
+                'pkg:ecosystem/groupId/artifact@recommendedversion',
         };
-        
-        const expectedResult = [
-            [{
-                "ruleId":dependencyData.recommendationRef,
-                "message":{
-                    "text": `Recommended Red Hat verified version: ${dependencyData.recommendationRef}.`
-                },
-                "locations":[
-                    {
-                        "physicalLocation":{
-                            "artifactLocation":{
-                                "uri":manifestFilePath
-                            },
-                            "region":{
-                                "startLine":startLine
-                            }
-                        }
-                    }
-                ]
-            }],
-            ['example rule']
-        ]
 
-        const results = rhdaToResult(dependencyData, manifestFilePath, startLine, refHasIssues)
-        
-        expect(results).toStrictEqual(expectedResult)
+        const expectedResult = [
+            [
+                {
+                    ruleId: dependencyData.recommendationRef,
+                    message: {
+                        text: `Recommended Red Hat verified version: ${dependencyData.recommendationRef}.`,
+                    },
+                    locations: [
+                        {
+                            physicalLocation: {
+                                artifactLocation: {
+                                    uri: manifestFilePath,
+                                },
+                                region: {
+                                    startLine: startLine,
+                                },
+                            },
+                        },
+                    ],
+                },
+            ],
+            ['example rule'],
+        ];
+
+        const results = rhdaToResult(
+            dependencyData,
+            manifestFilePath,
+            startLine,
+            refHasIssues,
+        );
+
+        expect(results).toStrictEqual(expectedResult);
     });
 });

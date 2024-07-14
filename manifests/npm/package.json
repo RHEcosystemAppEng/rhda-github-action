@@ -1,0 +1,13 @@
+{
+    "name": "project-with-deps",
+    "version": "1.0.0",
+    "dependencies": {
+        "ms": "2.1.2",
+        "axios": "^0.19.0",
+        "express": "4.17.1"
+    },
+    "exhortignore": [
+        "express"
+    ],
+    "devDependencies": {}
+}

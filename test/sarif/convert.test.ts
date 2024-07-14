@@ -3,7 +3,7 @@ import * as ghCore from '@actions/core';
 import * as fs from 'fs';
 
 import * as convert from '../../src/sarif/convert';
-import * as result from '../../src/sarif/results';
+import * as results from '../../src/sarif/results';
 import * as types from '../../src/sarif/types';
 import * as constants from '../../src/constants';
 
@@ -58,19 +58,17 @@ describe('resolveVersionFromReference', () => {
 describe('generateSarif', () => {
     const manifestFilePath = 'path/to/manifest';
 
-    const directVulnerability =   {
-        id: "CVE-123",
-        title: "Templates do not properly consider backticks.",
+    const directVulnerability = {
+        id: 'CVE-123',
+        title: 'Templates do not properly consider backticks.',
         cvss: {
-            cvss: "CVSS:3.1"
+            cvss: 'CVSS:3.1',
         },
-        severity: "CRITICAL",
-        cves: [
-            "CVE-123"
-        ],
+        severity: 'CRITICAL',
+        cves: ['CVE-123'],
         remediation: {
-            trustedContent: null
-        }
+            trustedContent: null,
+        },
     };
 
     const transitiveVulnerability = {
@@ -97,7 +95,7 @@ describe('generateSarif', () => {
 
     beforeEach(() => {
         vi.clearAllMocks();
-        vi.mocked(result.rhdaToResult).mockReturnValue([[], []]);
+        vi.mocked(results.rhdaToResult).mockReturnValue([[], []]);
     });
 
     it('should generate SARIF from RHDA report JSON with direct and transitive vulnerabilities', async () => {
@@ -105,23 +103,23 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {
                         source1: {
-                            summary: { 
-                                critical: 1, 
-                                high: 0, 
-                                medium: 0, 
-                                low: 0 
+                            summary: {
+                                critical: 1,
+                                high: 0,
+                                medium: 0,
+                                low: 0,
                             },
                             dependencies: [
-                                { 
+                                {
                                     ref: 'pkg:npm/lodash@4.17.20',
                                     issues: [directVulnerability],
                                     transitive: [transitiveVulnerability],
@@ -148,16 +146,16 @@ describe('generateSarif', () => {
             manifestFilePath,
             ecosystem,
         );
-        
+
         const expectedIssueData: types.IIssue = {
             id: 'CVE-123',
             severity: 'CRITICAL',
             title: 'Templates do not properly consider backticks.',
             cves: ['CVE-123'],
-            cvss: {cvss: 'CVSS:3.1'},
-            remediation: {trustedContent: null}
+            cvss: { cvss: 'CVSS:3.1' },
+            remediation: { trustedContent: null },
         };
-        
+
         const expectedTransitiveDependencyData: types.IDependencyData = {
             imageRef: undefined,
             depRef: 'pkg:npm/lodash@4.17.20',
@@ -169,7 +167,7 @@ describe('generateSarif', () => {
             sourceId: 'source1',
             issues: [expectedIssueData],
             transitives: null,
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         const expectedDependencyData: types.IDependencyData = {
@@ -183,16 +181,16 @@ describe('generateSarif', () => {
             sourceId: 'source1',
             issues: [expectedIssueData],
             transitives: [expectedTransitiveDependencyData],
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
 
-        expect(result.rhdaToResult).toHaveBeenCalledWith(
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
             expectedDependencyData,
             manifestFilePath,
             4,
-            true
+            true,
         );
 
         expect(sarifObject).toStrictEqual(mockSarif);
@@ -205,23 +203,23 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {
                         source1: {
-                            summary: { 
-                                critical: 1, 
-                                high: 0, 
-                                medium: 0, 
-                                low: 0 
+                            summary: {
+                                critical: 1,
+                                high: 0,
+                                medium: 0,
+                                low: 0,
                             },
                             dependencies: [
-                                { 
+                                {
                                     ref: 'pkg:npm/lodash@4.17.20',
                                     issues: null,
                                     transitive: [transitiveVulnerability],
@@ -248,16 +246,16 @@ describe('generateSarif', () => {
             manifestFilePath,
             ecosystem,
         );
-        
+
         const expectedIssueData: types.IIssue = {
             id: 'CVE-123',
             severity: 'CRITICAL',
             title: 'Templates do not properly consider backticks.',
             cves: ['CVE-123'],
-            cvss: {cvss: 'CVSS:3.1'},
-            remediation: {trustedContent: null}
+            cvss: { cvss: 'CVSS:3.1' },
+            remediation: { trustedContent: null },
         };
-        
+
         const expectedTransitiveDependencyData: types.IDependencyData = {
             imageRef: undefined,
             depRef: 'pkg:npm/lodash@4.17.20',
@@ -269,7 +267,7 @@ describe('generateSarif', () => {
             sourceId: 'source1',
             issues: [expectedIssueData],
             transitives: null,
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         const expectedDependencyData: types.IDependencyData = {
@@ -283,16 +281,16 @@ describe('generateSarif', () => {
             sourceId: 'source1',
             issues: null,
             transitives: [expectedTransitiveDependencyData],
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
 
-        expect(result.rhdaToResult).toHaveBeenCalledWith(
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
             expectedDependencyData,
             manifestFilePath,
             4,
-            true
+            true,
         );
 
         expect(sarifObject).toStrictEqual(mockSarif);
@@ -305,23 +303,23 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {
                         source1: {
-                            summary: { 
-                                critical: 0, 
-                                high: 1, 
-                                medium: 0, 
-                                low: 0 
+                            summary: {
+                                critical: 0,
+                                high: 1,
+                                medium: 0,
+                                low: 0,
                             },
                             dependencies: [
-                                { 
+                                {
                                     ref: 'pkg:maven/log4j/log4j@1.2.17',
                                     issues: null,
                                     transitive: null,
@@ -362,18 +360,18 @@ describe('generateSarif', () => {
             ecosystem: 'maven',
             providerId: 'provider1',
             sourceId: 'source1',
-            issues:  null,
+            issues: null,
             transitives: null,
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
 
-        expect(result.rhdaToResult).toHaveBeenCalledWith(
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
             expectedDependencyData,
             manifestFilePath,
             7,
-            false
+            false,
         );
 
         expect(sarifObject).toStrictEqual(mockSarif);
@@ -386,28 +384,28 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {
                         source1: {
-                            summary: { 
-                                critical: 0, 
-                                high: 0, 
-                                medium: 1, 
-                                low: 0 
+                            summary: {
+                                critical: 0,
+                                high: 0,
+                                medium: 1,
+                                low: 0,
                             },
                             dependencies: [
-                                { 
+                                {
                                     ref: 'pkg:maven/log4j/log4j@1.2.17',
                                     issues: null,
                                     transitive: null,
                                 },
-                                { 
+                                {
                                     ref: 'pkg:maven/log2j/log2j',
                                     issues: null,
                                     transitive: null,
@@ -462,9 +460,9 @@ describe('generateSarif', () => {
             ecosystem: 'gradle',
             providerId: 'provider1',
             sourceId: 'source1',
-            issues:  null,
+            issues: null,
             transitives: null,
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         const expectedDependencyData2: types.IDependencyData = {
@@ -476,27 +474,27 @@ describe('generateSarif', () => {
             ecosystem: 'gradle',
             providerId: 'provider1',
             sourceId: 'source1',
-            issues:  null,
+            issues: null,
             transitives: null,
-            recommendationRef: ''
+            recommendationRef: '',
         };
 
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
 
-        expect(result.rhdaToResult).toHaveBeenNthCalledWith(
+        expect(results.rhdaToResult).toHaveBeenNthCalledWith(
             1,
             expectedDependencyData1,
             manifestFilePath,
             22,
-            false
+            false,
         );
-        
-        expect(result.rhdaToResult).toHaveBeenNthCalledWith(
+
+        expect(results.rhdaToResult).toHaveBeenNthCalledWith(
             2,
             expectedDependencyData2,
             manifestFilePath,
             23,
-            false
+            false,
         );
 
         expect(sarifObject).toStrictEqual(mockSarif);
@@ -505,23 +503,24 @@ describe('generateSarif', () => {
     });
 
     it('should generate SARIF from RHDA report JSON for Docker ecosystem', async () => {
+        /* eslint-disable @typescript-eslint/naming-convention */
         const rhdaReportJson = {
             'node:latest': {
                 providers: {
                     provider1: {
-                        status: { 
-                            ok: true 
+                        status: {
+                            ok: true,
                         },
                         sources: {
                             source1: {
-                                summary: { 
-                                    critical: 0, 
-                                    high: 0, 
-                                    medium: 0, 
-                                    low: 1 
+                                summary: {
+                                    critical: 0,
+                                    high: 0,
+                                    medium: 0,
+                                    low: 1,
                                 },
                                 dependencies: [
-                                    { 
+                                    {
                                         ref: 'pkg:npm/log4j@1.2.17',
                                         issues: null,
                                         transitive: null,
@@ -533,6 +532,8 @@ describe('generateSarif', () => {
                 },
             },
         };
+        /* eslint-enable @typescript-eslint/naming-convention */
+
         const ecosystem = 'docker';
         const manifestData = `
             ARG TEST_ARG=node
@@ -543,7 +544,7 @@ describe('generateSarif', () => {
         `;
 
         vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
-        vi.mocked(result.rhdaToResult).mockReturnValue([[], []]);
+        vi.mocked(results.rhdaToResult).mockReturnValue([[], []]);
 
         const { sarifObject, vulSeverity } = await convert.generateSarif(
             rhdaReportJson,
@@ -552,7 +553,7 @@ describe('generateSarif', () => {
         );
 
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
-        
+
         const expectedDependencyData: types.IDependencyData = {
             imageRef: 'node:latest',
             depRef: 'pkg:npm/log4j@1.2.17',
@@ -562,15 +563,15 @@ describe('generateSarif', () => {
             ecosystem: 'docker',
             providerId: 'provider1',
             sourceId: 'source1',
-            issues:  null,
+            issues: null,
             transitives: null,
-            recommendationRef: ''
+            recommendationRef: '',
         };
-        expect(result.rhdaToResult).toHaveBeenCalledWith(
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
             expectedDependencyData,
             manifestFilePath,
             3,
-            false
+            false,
         );
 
         expect(sarifObject).toStrictEqual(mockSarif);
@@ -582,12 +583,12 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {},
                 },
@@ -609,10 +610,10 @@ describe('generateSarif', () => {
             manifestFilePath,
             ecosystem,
         );
-        
+
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
- 
-        expect(result.rhdaToResult).toHaveBeenCalledTimes(0);
+
+        expect(results.rhdaToResult).toHaveBeenCalledTimes(0);
 
         expect(sarifObject).toStrictEqual(mockSarif);
 
@@ -637,10 +638,10 @@ describe('generateSarif', () => {
             manifestFilePath,
             ecosystem,
         );
-        
+
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
- 
-        expect(result.rhdaToResult).toHaveBeenCalledTimes(0);
+
+        expect(results.rhdaToResult).toHaveBeenCalledTimes(0);
 
         expect(sarifObject).toStrictEqual(mockSarif);
 
@@ -652,20 +653,20 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {
                         source1: {
-                            summary: { 
-                                critical: 1, 
-                                high: 0, 
-                                medium: 0, 
-                                low: 0 
+                            summary: {
+                                critical: 1,
+                                high: 0,
+                                medium: 0,
+                                low: 0,
                             },
                             dependencies: [{}],
                         },
@@ -689,10 +690,10 @@ describe('generateSarif', () => {
             manifestFilePath,
             ecosystem,
         );
-        
+
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
- 
-        expect(result.rhdaToResult).toHaveBeenCalledTimes(0);
+
+        expect(results.rhdaToResult).toHaveBeenCalledTimes(0);
 
         expect(sarifObject).toStrictEqual(mockSarif);
 
@@ -704,12 +705,12 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: false 
+                    status: {
+                        ok: false,
                     },
                     sources: {},
                 },
@@ -731,12 +732,14 @@ describe('generateSarif', () => {
             manifestFilePath,
             ecosystem,
         );
-        
-        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
- 
-        expect(ghCore.warning).toHaveBeenCalledWith(`The component analysis couldn't fetch data from the following providers: [provider1]`);
 
-        expect(result.rhdaToResult).toHaveBeenCalledTimes(0);
+        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
+
+        expect(ghCore.warning).toHaveBeenCalledWith(
+            `The component analysis couldn't fetch data from the following providers: [provider1]`,
+        );
+
+        expect(results.rhdaToResult).toHaveBeenCalledTimes(0);
 
         expect(sarifObject).toStrictEqual(mockSarif);
 
@@ -748,23 +751,23 @@ describe('generateSarif', () => {
             scanned: {
                 total: 2,
                 direct: 1,
-                transitive: 1
+                transitive: 1,
             },
             providers: {
                 provider1: {
-                    status: { 
-                        ok: true 
+                    status: {
+                        ok: true,
                     },
                     sources: {
                         source1: {
-                            summary: { 
-                                critical: 1, 
-                                high: 0, 
-                                medium: 0, 
-                                low: 0 
+                            summary: {
+                                critical: 1,
+                                high: 0,
+                                medium: 0,
+                                low: 0,
                             },
                             dependencies: [
-                                { 
+                                {
                                     ref: 'pkg:npm/lodash@4.17.20',
                                     issues: [directVulnerability],
                                     transitive: [transitiveVulnerability],
@@ -785,7 +788,9 @@ describe('generateSarif', () => {
         `;
 
         vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
-        vi.spyOn(constants, 'SARIF_SCHEMA_URL', 'get').mockReturnValue('' as any)
+        vi.spyOn(constants, 'SARIF_SCHEMA_URL', 'get').mockReturnValue(
+            '' as any,
+        );
 
         try {
             await convert.generateSarif(
@@ -793,9 +798,11 @@ describe('generateSarif', () => {
                 manifestFilePath,
                 ecosystem,
             );
-            throw new Error('Expected error to be thrown')
+            throw new Error('Expected error to be thrown');
         } catch (error) {
-            expect(error.message).toEqual(`No $schema key for SARIF file, cannot proceed.`)
+            expect(error.message).toEqual(
+                `No $schema key for SARIF file, cannot proceed.`,
+            );
         }
     });
 });

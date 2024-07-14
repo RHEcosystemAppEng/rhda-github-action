@@ -5,20 +5,21 @@ import { generateArtifacts } from '../src/artifactHandler';
 import { Outputs } from '../src/generated/inputs-outputs';
 
 vi.mock('@actions/core', () => ({
-  getInput: vi.fn(),
-  getBooleanInput: vi.fn(),
-  info: vi.fn(),
-  setOutput: vi.fn(),
+    getInput: vi.fn(),
+    getBooleanInput: vi.fn(),
+    info: vi.fn(),
+    setOutput: vi.fn(),
 }));
 
+/* eslint-disable @typescript-eslint/naming-convention */
 vi.mock('@actions/artifact', () => ({
-  DefaultArtifactClient: vi.fn().mockImplementation(() => ({
-    uploadArtifact: vi.fn().mockResolvedValue({ id: 123 }),
-  })),
+    DefaultArtifactClient: vi.fn().mockImplementation(() => ({
+        uploadArtifact: vi.fn().mockResolvedValue({ id: 123 }),
+    })),
 }));
+/* eslint-enable @typescript-eslint/naming-convention */
 
 describe('generateArtifacts', () => {
-
     beforeEach(() => {
         vi.clearAllMocks();
     });
@@ -33,18 +34,15 @@ describe('generateArtifacts', () => {
 
         expect(ghCore.info).toHaveBeenCalledTimes(3);
         expect(ghCore.info).toHaveBeenCalledWith(
-        '⏳ Uploading JSON and SARIF files as artifacts...'
+            '⏳ Uploading JSON and SARIF files as artifacts...',
         );
         expect(ghCore.info).toHaveBeenCalledWith(
-        `✅ Successfully uploaded files: ${files}`
+            `✅ Successfully uploaded files: ${files}`,
         );
         expect(ghCore.info).toHaveBeenCalledWith(
-        `✍️ Setting artifact "artifactName" ID output "${Outputs.ARTIFACT_ID}" to 123`
+            `✍️ Setting artifact "artifactName" ID output "${Outputs.ARTIFACT_ID}" to 123`,
         );
-        expect(ghCore.setOutput).toHaveBeenCalledWith(
-        Outputs.ARTIFACT_ID,
-        123
-        );
+        expect(ghCore.setOutput).toHaveBeenCalledWith(Outputs.ARTIFACT_ID, 123);
     });
 
     it('should not upload artifacts when UPLOAD_ARTIFACT input is false', async () => {

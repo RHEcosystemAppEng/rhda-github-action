@@ -1,0 +1,51 @@
+name: Scan Golang project
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+        # Test once with explicit manifest_file, and once without
+        manifest_file: ["go.mod", ""]
+        include:
+          - index: 1
+            manifest_file: "go.mod"
+          - index: 2
+            manifest_file: ""
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    name: Analyse Golang project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v4
+        with:
+          go-version: '1.22'
+
+      - name: RHDA Scan
+        id: rhda_scan
+        uses: RHEcosystemAppEng/rhda-github-action@main
+        with:
+          manifest_directory: manifests/golang
+          manifest_file: ${{ matrix.manifest_file }}
+          artifact_filename: ${{ matrix.os }}${{ matrix.index }}-rhda-report
+          fail_on: never
+
+      - name: Print JSON analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.crda_report_json }}
+        run: cat ${{ steps.rhda_scan.outputs.crda_report_json }}
+
+      - name: Print SARIF analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.crda_report_sarif }}
+        run: cat ${{ steps.rhda_scan.outputs.crda_report_sarif }}
+
+      - name: Print Artifact ID
+        run: echo ${{ steps.rhda_scan.outputs.artifact_id }}
