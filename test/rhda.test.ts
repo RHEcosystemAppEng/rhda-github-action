@@ -22,14 +22,17 @@ vi.mock('../src/imageAnalysis', () => ({
     executeDockerImageAnalysis: vi.fn(),
 }));
 
-vi.mock('../src/utils', () => ({
-    writeToFile: vi.fn(),
-}));
+vi.mock('../src/utils', async (importOriginal) => {
+    const actual: any = await importOriginal();
+    return {
+        ...actual,
+        writeToFile: vi.fn(),
+        getOS: vi.fn(),
+    };
+});
 
 describe('generateRHDAReport', () => {
-    const manifestFilePath = 'path/to/manifest';
     const rhdaReportJson = 'Example Analysis Report';
-    const rhdaReportJsonFilePath = `${process.cwd()}/report.json`;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -64,6 +67,10 @@ describe('generateRHDAReport', () => {
     });
 
     it('should generate the RHDA report for non-Docker ecosystem', async () => {
+        const manifestFilePath = 'D:path\\to\\manifest';
+        const rhdaReportJsonFilePath = `${process.cwd()}\\report.json`;
+        vi.mocked(utils.getOS).mockImplementation(() => 'windows');
+
         const result = await generateRHDAReport(manifestFilePath, MAVEN);
 
         expect(ghCore.info).toBeCalledWith(`⏳ Analysing dependencies...`);
@@ -95,7 +102,7 @@ describe('generateRHDAReport', () => {
         );
         expect(ghCore.setOutput).toHaveBeenCalledWith(
             Outputs.RHDA_REPORT_JSON,
-            rhdaReportJsonFilePath,
+            utils.escapeWindowsPathForActionsOutput(rhdaReportJsonFilePath),
         );
         expect(ghCore.info).toBeCalledWith(
             `✅ Successfully generated Red Had Dependency Analytics report`,
@@ -107,6 +114,11 @@ describe('generateRHDAReport', () => {
     });
 
     it('should generate the RHDA report for Docker ecosystem', async () => {
+        const manifestFilePath = 'path/to/manifest';
+        const rhdaReportJsonFilePath = `${process.cwd()}/report.json`;
+
+        vi.mocked(utils.getOS).mockImplementation(() => 'linux');
+
         const result = await generateRHDAReport(manifestFilePath, DOCKER);
 
         expect(ghCore.info).toBeCalledWith(`⏳ Analysing dependencies...`);
@@ -122,7 +134,7 @@ describe('generateRHDAReport', () => {
         );
         expect(ghCore.setOutput).toHaveBeenCalledWith(
             Outputs.RHDA_REPORT_JSON,
-            rhdaReportJsonFilePath,
+            utils.escapeWindowsPathForActionsOutput(rhdaReportJsonFilePath),
         );
         expect(ghCore.info).toBeCalledWith(
             `✅ Successfully generated Red Had Dependency Analytics report`,

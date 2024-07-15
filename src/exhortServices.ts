@@ -32,7 +32,6 @@ function imageAnalysisService(
                 properties += ` -D${setting}=${options[setting]}`;
             }
         }
-
         try {
             const result = execSync(
                 `java${properties} -jar ${jarPath} ${reportType}${parameters}`,
@@ -59,7 +58,6 @@ async function stackAnalysisService(
 ): Promise<string | exhort.AnalysisReport> {
     try {
         // Get stack analysis in JSON format
-        console.log(`pathToManifest: ${pathToManifest}`)
         const stackAnalysisReportJson = await exhort.stackAnalysis(
             pathToManifest,
             false,

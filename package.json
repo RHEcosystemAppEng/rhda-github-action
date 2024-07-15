@@ -56,6 +56,6 @@
         "@actions/core": "^1.10.1",
         "@actions/exec": "^1.1.1",
         "@actions/github": "^6.0.0",
-        "@rhecosystemappeng/exhort-javascript-api": "npm:@RHEcosystemAppEng/exhort-javascript-api@^0.1.1-ea.47"
+        "@rhecosystemappeng/exhort-javascript-api": "0.1.1-ea.48"
     }
 }

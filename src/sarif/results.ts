@@ -111,7 +111,10 @@ function fetchResult(
         text: textMessage,
     };
     const artifactLocation: sarif.ArtifactLocation = {
-        uri: manifestFilePath.split(path.sep).join(path.posix.sep),
+        uri: path
+            .relative(process.cwd(), manifestFilePath)
+            .split(path.sep)
+            .join(path.posix.sep),
     };
     const region: sarif.Region = {
         startLine: startLine,

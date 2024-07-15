@@ -198,6 +198,350 @@ describe('generateSarif', () => {
         expect(vulSeverity).toBe('error');
     });
 
+    it('should generate SARIF from RHDA report JSON with critical severity vulnerabilities', async () => {
+        const rhdaReportJson = {
+            scanned: {
+                total: 1,
+                direct: 1,
+                transitive: 0,
+            },
+            providers: {
+                provider1: {
+                    status: {
+                        ok: true,
+                    },
+                    sources: {
+                        source1: {
+                            summary: {
+                                critical: 1,
+                                high: 0,
+                                medium: 0,
+                                low: 0,
+                            },
+                            dependencies: [
+                                {
+                                    ref: 'pkg:npm/lodash@4.17.20',
+                                    issues: [directVulnerability],
+                                    transitive: [],
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+        const ecosystem = 'npm';
+        const manifestData = `
+            {
+                "dependencies": {
+                    "lodash": "4.17.20",
+                }
+            }
+        `;
+
+        vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
+
+        const { sarifObject, vulSeverity } = await convert.generateSarif(
+            rhdaReportJson,
+            manifestFilePath,
+            ecosystem,
+        );
+
+        const expectedIssueData: types.IIssue = {
+            id: 'CVE-123',
+            severity: 'CRITICAL',
+            title: 'Templates do not properly consider backticks.',
+            cves: ['CVE-123'],
+            cvss: { cvss: 'CVSS:3.1' },
+            remediation: { trustedContent: null },
+        };
+
+        const expectedDependencyData: types.IDependencyData = {
+            imageRef: undefined,
+            depRef: 'pkg:npm/lodash@4.17.20',
+            depGroup: undefined,
+            depName: 'lodash',
+            depVersion: '4.17.20',
+            ecosystem: 'npm',
+            providerId: 'provider1',
+            sourceId: 'source1',
+            issues: [expectedIssueData],
+            transitives: [],
+            recommendationRef: '',
+        };
+
+        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
+
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
+            expectedDependencyData,
+            manifestFilePath,
+            4,
+            true,
+        );
+
+        expect(sarifObject).toStrictEqual(mockSarif);
+
+        expect(vulSeverity).toBe('error');
+    });
+
+    it('should generate SARIF from RHDA report JSON with high severity vulnerabilities', async () => {
+        const rhdaReportJson = {
+            scanned: {
+                total: 1,
+                direct: 1,
+                transitive: 0,
+            },
+            providers: {
+                provider1: {
+                    status: {
+                        ok: true,
+                    },
+                    sources: {
+                        source1: {
+                            summary: {
+                                critical: 0,
+                                high: 1,
+                                medium: 0,
+                                low: 0,
+                            },
+                            dependencies: [
+                                {
+                                    ref: 'pkg:npm/lodash@4.17.20',
+                                    issues: [directVulnerability],
+                                    transitive: [],
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+        const ecosystem = 'npm';
+        const manifestData = `
+            {
+                "dependencies": {
+                    "lodash": "4.17.20",
+                }
+            }
+        `;
+
+        vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
+
+        const { sarifObject, vulSeverity } = await convert.generateSarif(
+            rhdaReportJson,
+            manifestFilePath,
+            ecosystem,
+        );
+
+        const expectedIssueData: types.IIssue = {
+            id: 'CVE-123',
+            severity: 'CRITICAL',
+            title: 'Templates do not properly consider backticks.',
+            cves: ['CVE-123'],
+            cvss: { cvss: 'CVSS:3.1' },
+            remediation: { trustedContent: null },
+        };
+
+        const expectedDependencyData: types.IDependencyData = {
+            imageRef: undefined,
+            depRef: 'pkg:npm/lodash@4.17.20',
+            depGroup: undefined,
+            depName: 'lodash',
+            depVersion: '4.17.20',
+            ecosystem: 'npm',
+            providerId: 'provider1',
+            sourceId: 'source1',
+            issues: [expectedIssueData],
+            transitives: [],
+            recommendationRef: '',
+        };
+
+        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
+
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
+            expectedDependencyData,
+            manifestFilePath,
+            4,
+            true,
+        );
+
+        expect(sarifObject).toStrictEqual(mockSarif);
+
+        expect(vulSeverity).toBe('error');
+    });
+
+    it('should generate SARIF from RHDA report JSON with medium severity vulnerabilities', async () => {
+        const rhdaReportJson = {
+            scanned: {
+                total: 1,
+                direct: 1,
+                transitive: 0,
+            },
+            providers: {
+                provider1: {
+                    status: {
+                        ok: true,
+                    },
+                    sources: {
+                        source1: {
+                            summary: {
+                                critical: 0,
+                                high: 0,
+                                medium: 1,
+                                low: 0,
+                            },
+                            dependencies: [
+                                {
+                                    ref: 'pkg:npm/lodash@4.17.20',
+                                    issues: [directVulnerability],
+                                    transitive: [],
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+        const ecosystem = 'npm';
+        const manifestData = `
+            {
+                "dependencies": {
+                    "lodash": "4.17.20",
+                }
+            }
+        `;
+
+        vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
+
+        const { sarifObject, vulSeverity } = await convert.generateSarif(
+            rhdaReportJson,
+            manifestFilePath,
+            ecosystem,
+        );
+
+        const expectedIssueData: types.IIssue = {
+            id: 'CVE-123',
+            severity: 'CRITICAL',
+            title: 'Templates do not properly consider backticks.',
+            cves: ['CVE-123'],
+            cvss: { cvss: 'CVSS:3.1' },
+            remediation: { trustedContent: null },
+        };
+
+        const expectedDependencyData: types.IDependencyData = {
+            imageRef: undefined,
+            depRef: 'pkg:npm/lodash@4.17.20',
+            depGroup: undefined,
+            depName: 'lodash',
+            depVersion: '4.17.20',
+            ecosystem: 'npm',
+            providerId: 'provider1',
+            sourceId: 'source1',
+            issues: [expectedIssueData],
+            transitives: [],
+            recommendationRef: '',
+        };
+
+        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
+
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
+            expectedDependencyData,
+            manifestFilePath,
+            4,
+            true,
+        );
+
+        expect(sarifObject).toStrictEqual(mockSarif);
+
+        expect(vulSeverity).toBe('warning');
+    });
+
+    it('should generate SARIF from RHDA report JSON with low severity vulnerabilities', async () => {
+        const rhdaReportJson = {
+            scanned: {
+                total: 1,
+                direct: 1,
+                transitive: 0,
+            },
+            providers: {
+                provider1: {
+                    status: {
+                        ok: true,
+                    },
+                    sources: {
+                        source1: {
+                            summary: {
+                                critical: 0,
+                                high: 0,
+                                medium: 0,
+                                low: 1,
+                            },
+                            dependencies: [
+                                {
+                                    ref: 'pkg:npm/lodash@4.17.20',
+                                    issues: [directVulnerability],
+                                    transitive: [],
+                                },
+                            ],
+                        },
+                    },
+                },
+            },
+        };
+        const ecosystem = 'npm';
+        const manifestData = `
+            {
+                "dependencies": {
+                    "lodash": "4.17.20",
+                }
+            }
+        `;
+
+        vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
+
+        const { sarifObject, vulSeverity } = await convert.generateSarif(
+            rhdaReportJson,
+            manifestFilePath,
+            ecosystem,
+        );
+
+        const expectedIssueData: types.IIssue = {
+            id: 'CVE-123',
+            severity: 'CRITICAL',
+            title: 'Templates do not properly consider backticks.',
+            cves: ['CVE-123'],
+            cvss: { cvss: 'CVSS:3.1' },
+            remediation: { trustedContent: null },
+        };
+
+        const expectedDependencyData: types.IDependencyData = {
+            imageRef: undefined,
+            depRef: 'pkg:npm/lodash@4.17.20',
+            depGroup: undefined,
+            depName: 'lodash',
+            depVersion: '4.17.20',
+            ecosystem: 'npm',
+            providerId: 'provider1',
+            sourceId: 'source1',
+            issues: [expectedIssueData],
+            transitives: [],
+            recommendationRef: '',
+        };
+
+        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
+
+        expect(results.rhdaToResult).toHaveBeenCalledWith(
+            expectedDependencyData,
+            manifestFilePath,
+            4,
+            true,
+        );
+
+        expect(sarifObject).toStrictEqual(mockSarif);
+
+        expect(vulSeverity).toBe('warning');
+    });
+
     it('should generate SARIF from RHDA report JSON with only transitive vulnerabilities', async () => {
         const rhdaReportJson = {
             scanned: {
@@ -301,9 +645,9 @@ describe('generateSarif', () => {
     it('should generate SARIF from RHDA report JSON for MAVEN ecosystem', async () => {
         const rhdaReportJson = {
             scanned: {
-                total: 2,
-                direct: 1,
-                transitive: 1,
+                total: 1,
+                direct: 0,
+                transitive: 0,
             },
             providers: {
                 provider1: {
@@ -314,7 +658,7 @@ describe('generateSarif', () => {
                         source1: {
                             summary: {
                                 critical: 0,
-                                high: 1,
+                                high: 0,
                                 medium: 0,
                                 low: 0,
                             },
@@ -323,6 +667,8 @@ describe('generateSarif', () => {
                                     ref: 'pkg:maven/log4j/log4j@1.2.17',
                                     issues: null,
                                     transitive: null,
+                                    recommendation:
+                                        'pkg:maven/log4j/log4j@1.2.17-recommended',
                                 },
                             ],
                         },
@@ -362,7 +708,7 @@ describe('generateSarif', () => {
             sourceId: 'source1',
             issues: null,
             transitives: null,
-            recommendationRef: '',
+            recommendationRef: '1.2.17-recommended',
         };
 
         expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
@@ -376,15 +722,15 @@ describe('generateSarif', () => {
 
         expect(sarifObject).toStrictEqual(mockSarif);
 
-        expect(vulSeverity).toBe('error');
+        expect(vulSeverity).toBe('none');
     });
 
     it('should generate SARIF from RHDA report JSON for GRADLE ecosystem', async () => {
         const rhdaReportJson = {
             scanned: {
                 total: 2,
-                direct: 1,
-                transitive: 1,
+                direct: 0,
+                transitive: 0,
             },
             providers: {
                 provider1: {
@@ -396,7 +742,7 @@ describe('generateSarif', () => {
                             summary: {
                                 critical: 0,
                                 high: 0,
-                                medium: 1,
+                                medium: 0,
                                 low: 0,
                             },
                             dependencies: [
@@ -499,7 +845,7 @@ describe('generateSarif', () => {
 
         expect(sarifObject).toStrictEqual(mockSarif);
 
-        expect(vulSeverity).toBe('warning');
+        expect(vulSeverity).toBe('none');
     });
 
     it('should generate SARIF from RHDA report JSON for Docker ecosystem', async () => {
@@ -517,7 +863,7 @@ describe('generateSarif', () => {
                                     critical: 0,
                                     high: 0,
                                     medium: 0,
-                                    low: 1,
+                                    low: 0,
                                 },
                                 dependencies: [
                                     {
@@ -575,15 +921,15 @@ describe('generateSarif', () => {
         );
 
         expect(sarifObject).toStrictEqual(mockSarif);
-        expect(vulSeverity).toBe('warning');
+        expect(vulSeverity).toBe('none');
     });
 
-    it('should generate SARIF from RHDA report JSON with no vulnerabilities', async () => {
+    it('should generate SARIF from RHDA report JSON with no dependencies', async () => {
         const rhdaReportJson = {
             scanned: {
-                total: 2,
-                direct: 1,
-                transitive: 1,
+                total: 0,
+                direct: 0,
+                transitive: 0,
             },
             providers: {
                 provider1: {
@@ -597,8 +943,50 @@ describe('generateSarif', () => {
         const ecosystem = 'npm';
         const manifestData = `
             {
+                "dependencies": {}
+            }
+        `;
+
+        vi.mocked(fs.readFileSync).mockReturnValue(manifestData);
+
+        const { sarifObject, vulSeverity } = await convert.generateSarif(
+            rhdaReportJson,
+            manifestFilePath,
+            ecosystem,
+        );
+
+        expect(fs.readFileSync).toHaveBeenCalledWith(manifestFilePath, 'utf-8');
+
+        expect(results.rhdaToResult).toHaveBeenCalledTimes(0);
+
+        expect(sarifObject).toStrictEqual(mockSarif);
+
+        expect(vulSeverity).toBe('none');
+    });
+
+    it('should generate SARIF from RHDA report JSON with no dependency data', async () => {
+        const rhdaReportJson = {
+            scanned: {
+                total: 0,
+                direct: 0,
+                transitive: 0,
+            },
+            providers: {
+                provider1: {
+                    status: {
+                        ok: true,
+                    },
+                    sources: {
+                        source1: {},
+                    },
+                },
+            },
+        };
+        const ecosystem = 'npm';
+        const manifestData = `
+            {
                 "dependencies": {
-                    "lodash": "1.2.3",
+                    "lodash": "4.17.20",
                 }
             }
         `;
@@ -651,9 +1039,9 @@ describe('generateSarif', () => {
     it('should handle RHDA report JSON where no ref is defined', async () => {
         const rhdaReportJson = {
             scanned: {
-                total: 2,
+                total: 1,
                 direct: 1,
-                transitive: 1,
+                transitive: 0,
             },
             providers: {
                 provider1: {
@@ -703,9 +1091,9 @@ describe('generateSarif', () => {
     it('should handle RHDA report JSON where a vulnerability provider has failed', async () => {
         const rhdaReportJson = {
             scanned: {
-                total: 2,
-                direct: 1,
-                transitive: 1,
+                total: 1,
+                direct: 0,
+                transitive: 0,
             },
             providers: {
                 provider1: {

@@ -339,7 +339,9 @@ function rhdaJsonToSarif(
         }
 
         sources.forEach((source) => {
-            updateVulnerabilitySeverity(source.summary);
+            if (source.summary) {
+                updateVulnerabilitySeverity(source.summary);
+            }
 
             source.dependencies.forEach((d) => {
                 const dd = getDependencyData(d, source);

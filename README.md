@@ -12,7 +12,7 @@
 [![Scan Podman project](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_podman.yaml/badge.svg)](https://github.com/RHEcosystemAppEng/rhda-github-action/actions/workflows/scan_podman.yaml)
 <br>
 <br>
-<!-- [![tag badge](https://img.shields.io/github/v/tag/redhat-actions/crda)](https://github.com/redhat-actions/crda/tags) -->
+[![tag badge](https://img.shields.io/github/v/tag/RHEcosystemAppEng/rhda-github-action)](https://github.com/RHEcosystemAppEng/rhda-github-action/tags)
 [![license badge](https://img.shields.io/github/license/RHEcosystemAppEng/rhda-github-action)](./LICENSE)
 [![size badge](https://img.shields.io/github/size/RHEcosystemAppEng/rhda-github-action/dist/index.js)](./dist)
 

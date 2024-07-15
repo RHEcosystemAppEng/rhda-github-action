@@ -57,7 +57,7 @@ export async function generateRHDAReport(
         );
     }
 
-    const rhdaReportJsonFilePath: string = `${process.cwd()}/${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`;
+    const rhdaReportJsonFilePath: string = `${process.cwd()}${utils.getOS() === 'windows' ? '\\' : '/'}${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.json`;
     await utils.writeToFile(
         JSON.stringify(rhdaReportJson, null, 4),
         rhdaReportJsonFilePath,
@@ -66,7 +66,10 @@ export async function generateRHDAReport(
     ghCore.info(
         `✍️ Setting output "${Outputs.RHDA_REPORT_JSON}" to ${rhdaReportJsonFilePath}`,
     );
-    ghCore.setOutput(Outputs.RHDA_REPORT_JSON, rhdaReportJsonFilePath);
+    ghCore.setOutput(
+        Outputs.RHDA_REPORT_JSON,
+        utils.escapeWindowsPathForActionsOutput(rhdaReportJsonFilePath),
+    );
 
     ghCore.info(
         `✅ Successfully generated Red Had Dependency Analytics report`,

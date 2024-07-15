@@ -127,7 +127,6 @@ export async function zipFile(file: string): Promise<string> {
     const zippedContents = (await zlib.gzipSync(fileContents)).toString(
         'base64',
     );
-    // ghCore.info(`Zipped upload size: ${utils.convertToHumanFileSize(zippedContents.length)}`);
 
     return zippedContents;
 }

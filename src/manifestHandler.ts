@@ -3,10 +3,7 @@ import path from 'path';
 import { promises as fs } from 'fs';
 
 import { Inputs } from './generated/inputs-outputs.js';
-import {
-    fileNameToEcosystemMappings,
-    DEFAULT_MANIFEST_DIR,
-} from './constants.js';
+import { fileNameToEcosystemMappings } from './constants.js';
 
 /**
  * Resolves the manifest file path and its corresponding ecosystem.
@@ -25,7 +22,9 @@ export async function resolveManifestFilePath(): Promise<{
             `"${Inputs.MANIFEST_DIRECTORY}" not provided. Using working directory "${process.cwd()}"`,
         );
     }
-    const manifestDir = manifestDirInput || DEFAULT_MANIFEST_DIR;
+    const manifestDir = manifestDirInput
+        ? path.resolve(manifestDirInput)
+        : process.cwd();
 
     let manifestFilename: string;
     if (manifestFileInput) {
@@ -38,9 +37,7 @@ export async function resolveManifestFilePath(): Promise<{
         ghCore.info(
             `"${Inputs.MANIFEST_FILE}" input not provided. Auto-detecting manifest file`,
         );
-        ghCore.info(
-            `🔍 Looking for manifest in "${path.join(process.cwd(), manifestDir)}"...`,
-        );
+        ghCore.info(`🔍 Looking for manifest in "${manifestDir}"...`);
 
         manifestFilename = await autoDetectManifest(manifestDir);
     }

@@ -5,10 +5,7 @@ import { Dirent, promises as fs } from 'fs';
 
 import { resolveManifestFilePath } from '../src/manifestHandler';
 import { Inputs } from '../src/generated/inputs-outputs';
-import {
-    fileNameToEcosystemMappings,
-    DEFAULT_MANIFEST_DIR,
-} from '../src/constants';
+import { fileNameToEcosystemMappings } from '../src/constants';
 
 vi.mock('@actions/core', () => ({
     getInput: vi.fn(),
@@ -24,6 +21,33 @@ vi.mock('fs', () => ({
 describe('resolveManifestFilePath', () => {
     beforeEach(() => {
         vi.clearAllMocks();
+    });
+
+    it('should resolve manifest file path from provided MANIFEST_DIRECTORY and MANIFEST_FILE input', async () => {
+        vi.mocked(ghCore.getInput).mockImplementation((name) => {
+            if (name === Inputs.MANIFEST_DIRECTORY) {
+                return 'manifests/npm';
+            }
+            if (name === Inputs.MANIFEST_FILE) {
+                return 'package.json';
+            }
+            return '';
+        });
+
+        const expectedResolvedManifestPath = path.join(
+            path.resolve('manifests/npm'),
+            'package.json',
+        );
+
+        const result = await resolveManifestFilePath();
+
+        expect(ghCore.info).toHaveBeenCalledWith(
+            `ℹ️ Manifest file path is "${expectedResolvedManifestPath}"`,
+        );
+        expect(result).toEqual({
+            manifestFilePath: expectedResolvedManifestPath,
+            ecosystem: fileNameToEcosystemMappings['package.json'],
+        });
     });
 
     it('should use default directory when MANIFEST_DIRECTORY input is not provided', async () => {
@@ -43,7 +67,7 @@ describe('resolveManifestFilePath', () => {
             `"${Inputs.MANIFEST_DIRECTORY}" not provided. Using working directory "${process.cwd()}"`,
         );
         expect(result).toEqual({
-            manifestFilePath: path.join(DEFAULT_MANIFEST_DIR, 'package.json'),
+            manifestFilePath: path.join(process.cwd(), 'package.json'),
             ecosystem: fileNameToEcosystemMappings['package.json'],
         });
     });
@@ -88,14 +112,14 @@ describe('resolveManifestFilePath', () => {
         );
         expect(ghCore.info).toHaveBeenNthCalledWith(
             3,
-            `🔍 Looking for manifest in "${path.join(process.cwd(), DEFAULT_MANIFEST_DIR)}"...`,
+            `🔍 Looking for manifest in "${process.cwd()}"...`,
         );
         expect(ghCore.info).toHaveBeenNthCalledWith(
             4,
-            `ℹ️ Manifest file path is "${path.join(DEFAULT_MANIFEST_DIR, 'package.json')}"`,
+            `ℹ️ Manifest file path is "${path.join(process.cwd(), 'package.json')}"`,
         );
         expect(result).toEqual({
-            manifestFilePath: path.join(DEFAULT_MANIFEST_DIR, 'package.json'),
+            manifestFilePath: path.join(process.cwd(), 'package.json'),
             ecosystem: fileNameToEcosystemMappings['package.json'],
         });
     });
@@ -116,7 +140,7 @@ describe('resolveManifestFilePath', () => {
         ] as unknown as Dirent[]);
 
         await expect(resolveManifestFilePath()).rejects.toThrow(
-            `Failed to find a manifest file in "${DEFAULT_MANIFEST_DIR}" matching one of the expected project types. Expected to find one of: ${Object.keys(fileNameToEcosystemMappings).join(', ')}`,
+            `Failed to find a manifest file in "${process.cwd()}" matching one of the expected project types. Expected to find one of: ${Object.keys(fileNameToEcosystemMappings).join(', ')}`,
         );
     });
 });

@@ -41,7 +41,7 @@ export async function handleSarif(
             ecosystem,
         );
 
-    const rhdaReportSarifFilePath: string = `${process.cwd()}/${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`;
+    const rhdaReportSarifFilePath: string = `${process.cwd()}${utils.getOS() === 'windows' ? '\\' : '/'}${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`;
     await utils.writeToFile(
         JSON.stringify(rhdaReportSarif, null, 4),
         rhdaReportSarifFilePath,

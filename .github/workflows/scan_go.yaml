@@ -32,7 +32,7 @@ jobs:
 
       - name: RHDA Scan
         id: rhda_scan
-        uses: RHEcosystemAppEng/rhda-github-action@main
+        uses: RHEcosystemAppEng/rhda-github-action@chore/unit-tests
         with:
           manifest_directory: manifests/golang
           manifest_file: ${{ matrix.manifest_file }}
@@ -40,12 +40,14 @@ jobs:
           fail_on: never
 
       - name: Print JSON analysis report
-        if: ${{ always() && steps.rhda_scan.outputs.crda_report_json }}
-        run: cat ${{ steps.rhda_scan.outputs.crda_report_json }}
+        if: ${{ always() && steps.rhda_scan.outputs.rhda_report_json }}
+        run: cat ${{ steps.rhda_scan.outputs.rhda_report_json }}
+        shell: bash
 
       - name: Print SARIF analysis report
-        if: ${{ always() && steps.rhda_scan.outputs.crda_report_sarif }}
-        run: cat ${{ steps.rhda_scan.outputs.crda_report_sarif }}
+        if: ${{ always() && steps.rhda_scan.outputs.rhda_report_sarif }}
+        run: cat ${{ steps.rhda_scan.outputs.rhda_report_sarif }}
+        shell: bash
 
       - name: Print Artifact ID
         run: echo ${{ steps.rhda_scan.outputs.artifact_id }}

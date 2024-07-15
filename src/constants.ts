@@ -8,9 +8,6 @@ export const SARIF_SCHEMA_URL =
 // Version of the SARIF schema.
 export const SARIF_SCHEMA_VERSION = '2.1.0';
 
-// Default directory to look for manifest files.
-export const DEFAULT_MANIFEST_DIR = '.';
-
 // Supported manifests and files
 const GO_MOD = 'go.mod';
 const POM_XML = 'pom.xml';
