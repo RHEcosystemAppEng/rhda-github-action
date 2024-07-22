@@ -137,7 +137,7 @@ An example screenshot of a Node.js RHDA scan:
 <br >This action can also run RHDA scans on pull requests.
 Because the action must check out the pull request's code to scan it, you must use a [`pull_request_target` trigger](https://docs.github.com/en/actions/reference/events-that-trigger-workflows#pull_request_target).
 
-<br >After approving the RHDA scan, the workflow runs, and labels the scanning results to the pull request.
+<br >After the workflow runs, and labels the scanning results to the pull request.
 
 The following screenshot shows vulnerability details in the GitHub UI for a pull request.
 ![PR vulnerability details](./images/vul_details.png)
