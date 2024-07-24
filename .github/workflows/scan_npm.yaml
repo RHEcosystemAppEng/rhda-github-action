@@ -32,7 +32,7 @@ jobs:
 
       - name: RHDA Scan
         id: rhda_scan
-        uses: RHEcosystemAppEng/rhda-github-action@chore/unit-tests
+        uses: RHEcosystemAppEng/rhda-github-action@main
         with:
           manifest_directory: manifests/npm
           manifest_file: ${{ matrix.manifest_file }}
