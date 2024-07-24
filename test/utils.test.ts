@@ -5,7 +5,7 @@ import * as fs from 'fs';
 import * as zlib from 'zlib';
 
 import * as utils from '../src/utils';
-import { Inputs } from '../src/generated/inputs-outputs.js';
+import { Inputs } from '../src/generated/inputs-outputs';
 
 vi.mock('@actions/core', () => ({
     warning: vi.fn(),

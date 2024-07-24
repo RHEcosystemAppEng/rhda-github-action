@@ -8,6 +8,10 @@ export const SARIF_SCHEMA_URL =
 // Version of the SARIF schema.
 export const SARIF_SCHEMA_VERSION = '2.1.0';
 
+// Red Hat certified container image catalog
+export const REDHAT_CATALOG =
+    'https://catalog.redhat.com/software/containers/search';
+
 // Supported manifests and files
 const GO_MOD = 'go.mod';
 const POM_XML = 'pom.xml';

@@ -7,6 +7,7 @@ import {
     resolveDependencyFromReference,
     resolveVersionFromReference,
 } from './convert.js';
+import { REDHAT_CATALOG } from '../constants.js';
 
 /**
  * Converts RHDA dependency data into SARIF results and rules.
@@ -75,7 +76,9 @@ export function rhdaToResult(
             });
         }
     } else if (!refHasIssues && rhdaDependency.recommendationRef) {
-        const textMessage = `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
+        const textMessage = rhdaDependency.imageRef
+            ? `Switch to [Red Hat UBI](${REDHAT_CATALOG}) for enhanced security and enterprise-grade stability`
+            : `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
 
         const result = fetchResult(
             rhdaDependency.recommendationRef,

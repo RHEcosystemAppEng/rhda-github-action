@@ -2,7 +2,8 @@ import { describe, it, expect, vi, beforeEach } from 'vitest';
 
 import { rhdaToResult } from '../../src/sarif/results';
 import * as types from '../../src/sarif/types';
-import { resolveVersionFromReference } from '../../src/sarif/convert.js';
+import { resolveVersionFromReference } from '../../src/sarif/convert';
+import { REDHAT_CATALOG } from '../../src/constants';
 
 vi.mock('../../src/sarif/rules', () => ({
     fetchIssueRules: vi.fn().mockImplementation(() => 'example rule'),
@@ -247,6 +248,58 @@ describe('rhdaToResult', () => {
                     ruleId: dependencyData.recommendationRef,
                     message: {
                         text: `Recommended Red Hat verified version: ${dependencyData.recommendationRef}.`,
+                    },
+                    locations: [
+                        {
+                            physicalLocation: {
+                                artifactLocation: {
+                                    uri: manifestFilePath,
+                                },
+                                region: {
+                                    startLine: startLine,
+                                },
+                            },
+                        },
+                    ],
+                },
+            ],
+            ['example rule'],
+        ];
+
+        const results = rhdaToResult(
+            dependencyData,
+            manifestFilePath,
+            startLine,
+            refHasIssues,
+        );
+
+        expect(results).toStrictEqual(expectedResult);
+    });
+
+    it('should return correct SARIF result for a image without issues and with recommendation', () => {
+        const refHasIssues = false;
+
+        const dependencyData: types.IDependencyData = {
+            imageRef: 'image:tag',
+            depRef: 'pkg:ecosystem/groupId/artifact@version',
+            depGroup: 'groupId',
+            depName: 'groupId/artifact',
+            depVersion: 'version',
+            ecosystem: 'ecosystem',
+            providerId: 'providerId',
+            sourceId: 'sourceId',
+            issues: null,
+            transitives: null,
+            recommendationRef:
+                'pkg:ecosystem/groupId/artifact@recommendedversion',
+        };
+
+        const expectedResult = [
+            [
+                {
+                    ruleId: dependencyData.recommendationRef,
+                    message: {
+                        text: `Switch to [Red Hat UBI](${REDHAT_CATALOG}) for enhanced security and enterprise-grade stability`,
                     },
                     locations: [
                         {
