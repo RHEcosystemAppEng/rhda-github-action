@@ -372,14 +372,16 @@ function rhdaJsonToSarif(
 
             dependencyData.forEach((dd: types.IDependencyData) => {
                 const startLine = getStartLine(dd);
-                const res = result.rhdaToResult(
-                    dd,
-                    manifestFilePath,
-                    startLine,
-                    refHasIssues,
-                );
-                finalResults.push(...res[0]);
-                finalRules.push(...res[1]);
+                if (startLine > 0) {
+                    const res = result.rhdaToResult(
+                        dd,
+                        manifestFilePath,
+                        startLine,
+                        refHasIssues,
+                    );
+                    finalResults.push(...res[0]);
+                    finalRules.push(...res[1]);
+                }
             });
         },
     );

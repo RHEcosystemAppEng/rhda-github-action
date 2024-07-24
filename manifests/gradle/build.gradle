@@ -7,7 +7,7 @@ repositories {
 }
 
 ext {
-    myVersion = '2.13.5.Final'
+    myVersion = '2.13.7.Final'
 }
 
 dependencies { 
