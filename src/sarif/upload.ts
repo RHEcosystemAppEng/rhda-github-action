@@ -4,6 +4,16 @@ import * as github from '@actions/github';
 
 import * as utils from '../utils.js';
 
+/**
+ * Uploads a SARIF file to GitHub's code scanning.
+ * @param ghToken GitHub token for authentication.
+ * @param sarifPath Path to the SARIF file to upload.
+ * @param analysisStartTime Timestamp when the analysis started.
+ * @param sha SHA of the commit being analyzed.
+ * @param ref Ref (e.g., branch) of the commit being analyzed.
+ * @param uploadToRepo Object containing owner and repo names.
+ * @param printSecurityTabLink Whether to print a link to the Code Scanning results.
+ */
 export async function uploadSarifFile(
     ghToken: string,
     sarifPath: string,
@@ -33,7 +43,6 @@ export async function uploadSarifFile(
             ref,
             commit_sha: sha,
             sarif: sarifZipped,
-            // checkout_uri: manifestDir,
             started_at: analysisStartTime,
             tool_name: 'Red Hat Dependency Analytics',
         },
@@ -83,6 +92,12 @@ export async function uploadSarifFile(
     }
 }
 
+/**
+ * Waits for the SARIF upload to finish by polling GitHub's code scanning API.
+ * @param ghToken GitHub token for authentication.
+ * @param sarifId ID of the SARIF upload.
+ * @throws {Error} Throws an error if SARIF upload times out or fails.
+ */
 async function waitForUploadToFinish(
     ghToken: string,
     sarifId: string,

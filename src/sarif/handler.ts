@@ -5,9 +5,21 @@ import { Inputs, Outputs } from '../generated/inputs-outputs.js';
 import * as convert from './convert.js';
 import * as upload from './upload.js';
 import * as utils from '../utils.js';
-import { PrData } from '../pr/types.js';
+import { IPrData } from '../pr/types.js';
 import * as constants from '../constants.js';
 
+/**
+ * Handles the conversion of RHDA report JSON to SARIF format, writing it to a file,
+ * setting outputs, and optionally uploading it to GitHub Actions.
+ * @param rhdaReportJson - The RHDA report JSON to convert.
+ * @param manifestFilePath - The path to the manifest file being analyzed.
+ * @param ecosystem - The ecosystem related to the analysis.
+ * @param sha - The SHA of the commit being analyzed.
+ * @param ref - The reference (branch or tag) being analyzed.
+ * @param analysisStartTime - The start time of the analysis.
+ * @param prData - Pull request data if available.
+ * @returns An object containing the path to the generated SARIF file and the vulnerability severity level.
+ */
 export async function handleSarif(
     rhdaReportJson: any,
     manifestFilePath: string,
@@ -15,7 +27,7 @@ export async function handleSarif(
     sha: string,
     ref: string,
     analysisStartTime: string,
-    prData: PrData,
+    prData: IPrData,
 ): Promise<{
     rhdaReportSarifFilePath: string;
     vulSeverity: constants.VulnerabilitySeverity;
@@ -29,7 +41,7 @@ export async function handleSarif(
             ecosystem,
         );
 
-    const rhdaReportSarifFilePath: string = `${process.cwd()}/${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`;
+    const rhdaReportSarifFilePath: string = `${process.cwd()}${utils.getOS() === 'windows' ? '\\' : '/'}${ghCore.getInput(Inputs.RHDA_REPORT_NAME)}.sarif`;
     await utils.writeToFile(
         JSON.stringify(rhdaReportSarif, null, 4),
         rhdaReportSarifFilePath,

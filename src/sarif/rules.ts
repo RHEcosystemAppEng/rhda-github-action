@@ -2,6 +2,12 @@ import * as sarif from 'sarif';
 
 import * as types from './types.js';
 
+/**
+ * Converts issue data into a SARIF ReportingDescriptor (rule) object.
+ * @param issueData - The issue data to convert.
+ * @param directRef - The direct reference associated with the issue (dependency or image).
+ * @returns A SARIF ReportingDescriptor (rule) representing the issue.
+ */
 export function fetchIssueRules(
     issueData: types.IIssue,
     directRef: string,
@@ -30,18 +36,23 @@ export function fetchIssueRules(
 
     let fullDescription: sarif.MultiformatMessageString = undefined;
     let properties: sarif.PropertyBag = undefined;
-    if (issueData.cves && issueData.cvss) {
+    if (issueData.cves && issueData.cves.length > 0) {
         fullDescription = {
             text: `${issueData.cves.join(', ')}`,
         };
 
         properties = {
-            tags: [
-                'security',
-                ...issueData.cves,
-                `cvss:${issueData.cvss.cvss}`,
-            ],
+            tags: ['security', ...issueData.cves],
         };
+    }
+    if (issueData.cvss) {
+        if (properties) {
+            properties.tags.push(`cvss:${issueData.cvss.cvss}`);
+        } else {
+            properties = {
+                tags: ['security', `cvss:${issueData.cvss.cvss}`],
+            };
+        }
     }
 
     const rule: sarif.ReportingDescriptor = {
@@ -56,6 +67,11 @@ export function fetchIssueRules(
     return rule;
 }
 
+/**
+ * Converts a recommendation into a SARIF ReportingDescriptor (rule) object.
+ * @param recommendation - The recommendation to convert.
+ * @returns A SARIF ReportingDescriptor (rule) representing the recommendation.
+ */
 export function fetchRecomendationRules(
     recommendation: string,
 ): sarif.ReportingDescriptor {

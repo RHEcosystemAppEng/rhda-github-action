@@ -7,7 +7,7 @@ import { IImageRef, IOptions } from './imageAnalysis.js';
  * Executes RHDA image analysis using the provided images and options.
  * @param images - The images to analyze.
  * @param options - The options for running image analysis.
- * @returns A Promise resolving to the analysis response in HTML format.
+ * @returns A Promise resolving to the analysis response in JSON format.
  */
 function imageAnalysisService(
     images: IImageRef[],
@@ -32,7 +32,6 @@ function imageAnalysisService(
                 properties += ` -D${setting}=${options[setting]}`;
             }
         }
-
         try {
             const result = execSync(
                 `java${properties} -jar ${jarPath} ${reportType}${parameters}`,
@@ -51,7 +50,7 @@ function imageAnalysisService(
  * Performs RHDA stack analysis based on the provided manifest path and options.
  * @param pathToManifest The path to the manifest file for analysis.
  * @param options Additional options for the analysis.
- * @returns A promise resolving to the stack analysis report in HTML format.
+ * @returns A promise resolving to the stack analysis report in JSON format.
  */
 async function stackAnalysisService(
     pathToManifest,

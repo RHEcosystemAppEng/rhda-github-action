@@ -1,0 +1,20 @@
+plugins {
+    id 'java'
+}
+
+repositories {
+    mavenCentral()
+}
+
+ext {
+    myVersion = '2.13.7.Final'
+}
+
+dependencies { 
+    implementation "io.quarkus:quarkus-vertx-http:${myVersion}"
+    implementation "io.quarkus:quarkus-resteasy-multipart:2.13.7.Final"
+}
+
+test {
+    useJUnitPlatform()
+}

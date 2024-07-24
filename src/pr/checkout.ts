@@ -2,6 +2,10 @@ import * as ghCore from '@actions/core';
 
 import { getGitExecutable, execCommand } from '../utils.js';
 
+/**
+ * Retrieves the name of the original checkout branch.
+ * @returns The name of the original checkout branch.
+ */
 export async function getOriginalCheckoutBranch(): Promise<string> {
     const branch = (
         await execCommand(getGitExecutable(), ['branch', '--show-current'])
@@ -10,9 +14,10 @@ export async function getOriginalCheckoutBranch(): Promise<string> {
 }
 
 /**
- * Checkout PR code to run the CRDA Analysis on a PR,
- * After completion of the scan this created remote and branch
- * will be deleted and branch will be checkedout the present branch
+ * Checks out a pull request branch from a remote repository.
+ * After scan completion, this remote and branch will be deleted and original branch will be checked out.
+ * @param baseRepoUrl - The URL of the base repository.
+ * @param prNumber - The number of the pull request.
  */
 export async function checkoutPr(
     baseRepoUrl: string,
@@ -38,8 +43,11 @@ export async function checkoutPr(
     await execCommand(getGitExecutable(), ['checkout', localbranchName]);
 }
 
-// Do cleanup after the crda scan and checkout
-// back to the original branch
+/**
+ * Cleans up the branches and remotes created during the pull request checkout process.
+ * @param prNumber - The number of the pull request.
+ * @param originalCheckoutBranch - The name of the original checkout branch.
+ */
 export async function checkoutCleanup(
     prNumber: number,
     originalCheckoutBranch: string,
@@ -57,10 +65,20 @@ export async function checkoutCleanup(
     await execCommand(getGitExecutable(), ['branch', '-D', `${branchName}`]);
 }
 
+/**
+ * Gets the remote name for a pull request.
+ * @param prNumber - The number of the pull request.
+ * @returns The remote name for the pull request.
+ */
 function getPRRemoteName(prNumber: number): string {
     return `remote-${prNumber}`;
 }
 
+/**
+ * Gets the branch name for a pull request.
+ * @param prNumber - The number of the pull request.
+ * @returns The branch name for the pull request.
+ */
 function getPRBranchName(prNumber: number): string {
     return `pr-${prNumber}`;
 }

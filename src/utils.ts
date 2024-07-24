@@ -7,35 +7,64 @@ import { Inputs } from './generated/inputs-outputs.js';
 
 type OS = 'linux' | 'macos' | 'windows';
 let currentOS: OS | undefined;
+let ghToken: string | undefined;
+let gitExecutable: string | undefined;
+
+/**
+ * Sets the current operating system.
+ * @param value - The operating system to set.
+ */
+export function setCurrentOS(value: OS | undefined) {
+    currentOS = value;
+}
+
+/**
+ * Sets the GitHub token.
+ * @param value - The GitHub token to set.
+ */
+export function setGhToken(value: string | undefined) {
+    ghToken = value;
+}
+
+/**
+ * Sets the Git executable.
+ * @param value - The Git executable to set.
+ */
+export function setGitExecutable(value: string | undefined) {
+    gitExecutable = value;
+}
+
+/**
+ * Gets the current operating system.
+ * @returns The current operating system.
+ */
 export function getOS(): OS {
-    if (currentOS === null) {
+    if (!currentOS) {
         const rawOS = process.platform;
         if (rawOS === 'win32') {
-            currentOS = 'windows';
+            setCurrentOS('windows');
         } else if (rawOS === 'darwin') {
-            currentOS = 'macos';
+            setCurrentOS('macos');
         } else if (rawOS !== 'linux') {
             ghCore.warning(`Unrecognized OS "${rawOS}"`);
-            currentOS = 'linux';
+            setCurrentOS('linux');
         } else {
-            currentOS = 'linux';
+            setCurrentOS('linux');
         }
     }
 
     return currentOS;
 }
 
-let ghToken: string | undefined;
 /**
  *
  * @returns GitHub token provided by the user.
  * If no token is provided, returns the empty string.
  */
 export function getGhToken(): string {
-    if (ghToken === null) {
+    if (!ghToken) {
         ghToken = ghCore.getInput(Inputs.GITHUB_TOKEN);
 
-        // this to only solve the problem of local development
         if (!ghToken && process.env.GITHUB_TOKEN) {
             ghToken = process.env.GITHUB_TOKEN;
         }
@@ -43,17 +72,25 @@ export function getGhToken(): string {
     return ghToken;
 }
 
-let gitExecutable: string | undefined;
+/**
+ * Gets the Git executable.
+ * @returns The Git executable.
+ */
 export function getGitExecutable(): string {
     if (gitExecutable) {
         return gitExecutable;
     }
-
     const git = getOS() === 'windows' ? 'git.exe' : 'git';
     gitExecutable = git;
     return git;
 }
 
+/**
+ * Gets an environment variable.
+ * @param envName - The name of the environment variable.
+ * @returns The value of the environment variable.
+ * @throws If the environment variable is not set or is empty.
+ */
 export function getEnvVar(envName: string): string {
     const value = process.env[envName];
     if (value === undefined || value.length === 0) {
@@ -62,26 +99,34 @@ export function getEnvVar(envName: string): string {
     return value;
 }
 
+/**
+ * Writes data to a file.
+ * @param data - The data to write.
+ * @param path - The path of the file.
+ */
 export function writeToFile(data, path) {
     fs.writeFileSync(path, data, 'utf-8');
 }
 
-export function escapeWindowsPathForActionsOutput(p: string): string {
-    return p.replace(/\\/g, '\\\\');
+/**
+ * Escapes a Windows path for GitHub Actions output.
+ * @param path - The path to escape.
+ * @returns The escaped path.
+ */
+export function escapeWindowsPathForActionsOutput(path: string): string {
+    return path.replace(/\\/g, '\\\\');
 }
 
 /**
- *
- * @returns The given file as a gzipped string.
+ * Zips a file.
+ * @param file - The path of the file to zip.
+ * @returns The gzipped file as a base64 string.
  */
 export async function zipFile(file: string): Promise<string> {
     const fileContents = await fs.readFileSync(file, 'utf-8');
-    // ghCore.debug(`Raw upload size: ${utils.convertToHumanFileSize(fileContents.length)}`);
     const zippedContents = (await zlib.gzipSync(fileContents)).toString(
         'base64',
     );
-    // ghCore.debug(`Zipped file: ${zippedContents}`);
-    // ghCore.info(`Zipped upload size: ${utils.convertToHumanFileSize(zippedContents.length)}`);
 
     return zippedContents;
 }
@@ -103,15 +148,12 @@ export function isDefined(obj: any, ...keys: string[]): boolean {
 }
 
 /**
- * Run 'crda' with the given arguments.
- *
- * @throws If the exitCode is not 0, unless execOptions.ignoreReturnCode is set.
- *
- * @param args Arguments and options to 'crda'. Use getOptions to convert an options mapping into a string[].
- * @param execOptions Options for how to run the exec. See note about hideOutput on windows.
- * @returns Exit code and the contents of stdout/stderr.
+ * Executes a command.
+ * @param executable - The command to execute.
+ * @param args - The arguments to pass to the command.
+ * @param options - The options for execution.
+ * @returns An object containing the exit code, stdout, and stderr.
  */
-
 export async function execCommand(
     executable: string,
     args: string[],
@@ -138,6 +180,10 @@ export async function execCommand(
     return { exitCode, stdout, stderr };
 }
 
+/**
+ * Gets the current commit SHA.
+ * @returns The current commit SHA.
+ */
 export async function getCommitSha(): Promise<string> {
     const commitSha = (
         await execCommand(getGitExecutable(), ['rev-parse', 'HEAD'])

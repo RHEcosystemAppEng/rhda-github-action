@@ -1,4 +1,7 @@
-export interface PrData {
+/**
+ * Represents data specification related to a pull request.
+ */
+export interface IPrData {
     author: string | undefined;
     number: number;
     sha: string;

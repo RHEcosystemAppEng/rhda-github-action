@@ -1,0 +1,53 @@
+name: Scan Npm project
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  test:
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ "ubuntu-latest", "macos-latest", "windows-latest" ]
+        # Test once with explicit manifest_file, and once without
+        manifest_file: ["package.json", ""]
+        include:
+          - index: 1
+            manifest_file: "package.json"
+          - index: 2
+            manifest_file: ""
+    runs-on: ${{ matrix.os }}
+    defaults:
+      run:
+        shell: bash
+    name: Analyse Npm project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+            node-version: '20'
+
+      - name: RHDA Scan
+        id: rhda_scan
+        uses: RHEcosystemAppEng/rhda-github-action@main
+        with:
+          manifest_directory: manifests/npm
+          manifest_file: ${{ matrix.manifest_file }}
+          artifact_filename: ${{ matrix.os }}${{ matrix.index }}-rhda-report
+          fail_on: never
+
+      - name: Print JSON analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.rhda_report_json }}
+        run: cat ${{ steps.rhda_scan.outputs.rhda_report_json }}
+        shell: bash
+
+      - name: Print SARIF analysis report
+        if: ${{ always() && steps.rhda_scan.outputs.rhda_report_sarif }}
+        run: cat ${{ steps.rhda_scan.outputs.rhda_report_sarif }}
+        shell: bash
+
+      - name: Print Artifact ID
+        run: echo ${{ steps.rhda_scan.outputs.artifact_id }}

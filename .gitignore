@@ -3,3 +3,9 @@
 
 # npm  config file
 .npmrc
+
+# test coverage directories
+coverage/
+
+# Ignore dependency caches
+**/.gradle

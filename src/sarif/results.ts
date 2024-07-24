@@ -7,7 +7,16 @@ import {
     resolveDependencyFromReference,
     resolveVersionFromReference,
 } from './convert.js';
+import { REDHAT_CATALOG } from '../constants.js';
 
+/**
+ * Converts RHDA dependency data into SARIF results and rules.
+ * @param rhdaDependency - The RHDA dependency data to convert.
+ * @param manifestFilePath - The path to the manifest file being analyzed.
+ * @param startLine - The starting line number of the dependency from the manifest file.
+ * @param refHasIssues - Indicates whether the dependency has issues.
+ * @returns An array containing SARIF results and rules.
+ */
 export function rhdaToResult(
     rhdaDependency: types.IDependencyData,
     manifestFilePath: string,
@@ -67,7 +76,9 @@ export function rhdaToResult(
             });
         }
     } else if (!refHasIssues && rhdaDependency.recommendationRef) {
-        const textMessage = `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
+        const textMessage = rhdaDependency.imageRef
+            ? `Switch to [Red Hat UBI](${REDHAT_CATALOG}) for enhanced security and enterprise-grade stability`
+            : `Recommended Red Hat verified version: ${rhdaDependency.recommendationRef}.`;
 
         const result = fetchResult(
             rhdaDependency.recommendationRef,
@@ -85,6 +96,14 @@ export function rhdaToResult(
     return [results, rules];
 }
 
+/**
+ * Constructs a SARIF result object based on the provided data.
+ * @param ruleId - The ID of the rule associated with the result.
+ * @param textMessage - The message associated with the result.
+ * @param manifestFilePath - The path to the manifest file being analyzed.
+ * @param startLine - The starting line number of the dependency from the manifest file.
+ * @returns A SARIF result object.
+ */
 function fetchResult(
     ruleId: string,
     textMessage: string,
@@ -95,10 +114,10 @@ function fetchResult(
         text: textMessage,
     };
     const artifactLocation: sarif.ArtifactLocation = {
-        // GitHub seems to fail to find the file if windows paths are used
-        uri: manifestFilePath.split(path.sep).join(path.posix.sep),
-        // uri: manifestFile.slice(manifestFile.lastIndexOf("/") + 1),
-        // uriBaseId: manifestFile.slice(0, manifestFile.lastIndexOf("/")),
+        uri: path
+            .relative(process.cwd(), manifestFilePath)
+            .split(path.sep)
+            .join(path.posix.sep),
     };
     const region: sarif.Region = {
         startLine: startLine,
