@@ -39,7 +39,7 @@ In future releases, Red Hat plans to support other programming languages.
 ## Configuring RHDA GitHub Action
 
 You can configure GitHub Actions to use RHDA for your coding environment.
-You can see [examples of scanning](./.github/workflows) for each supported language, or you can use the [example below](#example).
+You can see [examples of scanning](./.github/workflows) for each supported language, or you can use the example below.
 
 * GitHub Actions for your environment:
   - [Go](https://github.com/actions/setup-go)
